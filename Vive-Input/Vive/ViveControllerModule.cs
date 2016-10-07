@@ -1,50 +1,30 @@
 ﻿
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using Valve.VR;
+using System.Collections;
 
 namespace FRL.IO {
-  [RequireComponent(typeof(SteamVR_TrackedObject))]
   public class ViveControllerModule : BaseInputModule {
 
-    /////Public/////
-    //References
-    //Primitives
+    [Tooltip("Test input mode. Arrow and letter keys can be used to aim and emulate button actions.")]
+    public bool testInput = false;
+    [Tooltip("Test ray. Basic ray that goes from slightly in front of the gameObject to either the interaction distance, or the ray hit.")]
+    public bool testRay = false;
+
     [Tooltip("Optional tag for limiting interaction.")]
     public string interactTag;
     [Range(0, float.MaxValue)]
     [Tooltip("Interaction range of the module.")]
     public float interactDistance = 10f;
 
-
-    /// <summary>
-    /// Pairing dictionaries are used to keep track of the gameObject that is bound to the context
-    /// of the press or touch. For example, if a gameObject is pointed at and successfully receives
-    /// an OnGripDown, that gameObject is kept in context of that grip press cycle (down,held,up).
-    /// 
-    /// Receiver dictionaries are used to keep track of which GlobalReceivers existed at the time of execution.
-    /// They are populated on "down", and are emptied on "up". A gameObject must exist before the context cycle exists
-    /// for it to receive input during that context cycle. 
-    /// </summary>
     private Dictionary<EVRButtonId, GameObject> pressPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<GlobalReceiver>> pressReceivers = new Dictionary<EVRButtonId, List<GlobalReceiver>>();
     private Dictionary<EVRButtonId, GameObject> touchPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<GlobalReceiver>> touchReceivers = new Dictionary<EVRButtonId, List<GlobalReceiver>>();
-
-    /// <summary>
-    /// The attached controller. 
-    /// </summary>
     private SteamVR_TrackedObject controller;
-
-    /// <summary>
-    /// The eventData associated with this module. Updated every frame.
-    /// </summary>
     private EventData eventData;
 
-    /// <summary>
-    /// Raycast fields used for physics raycasting.
-    /// </summary>
     private List<RaycastHit> hits = new List<RaycastHit>();
     private Ray ray;
 
@@ -66,12 +46,29 @@ namespace FRL.IO {
       EVRButtonId.k_EButton_SteamVR_Trigger
     };
 
-    /// <summary>
-    /// Gets all necessary bindings, and initializes all dictionaries.
-    /// </summary>
-    protected void Awake() {
 
+    private Dictionary<KeyCode, EVRButtonId> keysToPressIds = new Dictionary<KeyCode, EVRButtonId> {
+      {KeyCode.A,EVRButtonId.k_EButton_ApplicationMenu},
+      {KeyCode.G,EVRButtonId.k_EButton_Grip},
+      {KeyCode.P,EVRButtonId.k_EButton_SteamVR_Touchpad},
+      {KeyCode.T,EVRButtonId.k_EButton_SteamVR_Trigger}
+    };
+
+    private Dictionary<KeyCode, EVRButtonId> keysToTouchIds = new Dictionary<KeyCode, EVRButtonId> {
+      {KeyCode.O,EVRButtonId.k_EButton_SteamVR_Touchpad},
+      {KeyCode.R,EVRButtonId.k_EButton_SteamVR_Trigger}
+    };
+
+
+    private LineRenderer line;
+
+    protected void Awake() {
       controller = this.GetComponent<SteamVR_TrackedObject>();
+
+      if (!controller) {
+        testInput = true;
+      }
+
       eventData = new EventData(this, controller);
 
       foreach (EVRButtonId button in pressIds) {
@@ -85,11 +82,6 @@ namespace FRL.IO {
       }
     }
     
-    /// <summary>
-    /// Executes "Up" on all buttons, so that all current contexts are 
-    /// ended. Also updates the CurrentObject to be null, so IPointerExitHandler
-    /// is correctly executed.
-    /// </summary>
     protected void OnDisable() {
 
       foreach (EVRButtonId button in pressIds) {
@@ -105,21 +97,23 @@ namespace FRL.IO {
       eventData.currentRaycast = null;
       this.UpdateCurrentObject();
       eventData.Reset();
+      this.DestroyTestRay();
     }
 
-    /// <summary>
-    /// Executes all necessary functions for the module.
-    /// </summary>
     void Update() {
       this.Raycast();
       this.UpdateCurrentObject();
-      this.HandleButtons();
+
+      if (testInput) {
+        this.RotateGameObjectByArrows();
+      } else {
+        this.HandleButtons();
+      }
+
+      this.HandleTestInput();
+      this.HandleTestRay();
     }
 
-    /// <summary>
-    /// Attempts to find the SteamVR_RenderModel and hide it by disabling it.
-    /// Probably could be more sophisticated.
-    /// </summary>
     public void HideModel() {
       SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel> ();
       if (model) {
@@ -127,10 +121,6 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Attempts to find the SteamVR_RenderModel and show it by enabling it.
-    /// Probably could be more sophisticated.
-    /// </summary>
     public void ShowModel() {
       SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel> ();
       if (model) {
@@ -138,14 +128,7 @@ namespace FRL.IO {
       }
     }
 
-
-    /// <summary>
-    /// Helper IEnumerator function for performing a pulse on the controller.
-    /// </summary>
-    /// <param name="duration">The duration of the pulse.</param>
-    /// <param name="strength">The strength of the pulse.</param>
-    /// <returns></returns>
-    private IEnumerator Pulse (float duration, ushort strength) {
+    IEnumerator Pulse (float duration, ushort strength) {
       float startTime = Time.realtimeSinceStartup;
       while (Time.realtimeSinceStartup - startTime < duration) {
         SteamVR_Controller.Input((int) controller.index).TriggerHapticPulse (strength);
@@ -153,23 +136,15 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Triggers a haptic pulse on the connected controller, for a given duration and strength.
-    /// </summary>
-    /// <param name="duration">The duration of the pulse.</param>
-    /// <param name="strength">The strength of the pulse.</param>
+    // Duration in seconds, strength is a value from 0 to 3999.
     public void TriggerHapticPulse(float duration, ushort strength) {
       StartCoroutine (Pulse (duration, strength));
     }
 
-    /// <summary>
-    /// Raycasts from the position of the module, for the given interaction distance.
-    /// If the interact tag field is populated, that filter will also be applied.
-    /// </summary>
     private void Raycast() {
       hits.Clear();
 
-      //cast ray
+      //CAST RAY
       Vector3 v = transform.position;
       Quaternion q = transform.rotation;
       ray = new Ray(v, q * Vector3.forward);
@@ -199,18 +174,10 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Updates the current object being raycasted to.
-    /// </summary>
     void UpdateCurrentObject() {
       this.HandlePointerExitAndEnter(eventData);
     }
 
-    /// <summary>
-    /// Executes IPointerEnterHandler and IPointerExitHandler on
-    /// the previous and current raycast objects, if necessary.
-    /// </summary>
-    /// <param name="eventData"></param>
     void HandlePointerExitAndEnter(EventData eventData) {
       if (eventData.previousRaycast != eventData.currentRaycast) {
         ExecuteEvents.Execute<IPointerEnterHandler>(
@@ -220,13 +187,86 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Executes all pointer and global press and touch calls for the controller.
-    /// </summary>
+    void RotateGameObjectByArrows() {
+      if (Input.GetKey(KeyCode.LeftArrow)) {
+        transform.Rotate(Vector3.down * 90f * Time.deltaTime);
+      }
+      if (Input.GetKey(KeyCode.RightArrow)) {
+        transform.Rotate(Vector3.up * 90f * Time.deltaTime);
+      }
+      if (Input.GetKey(KeyCode.UpArrow)) {
+        transform.Rotate(Vector3.left * 90f * Time.deltaTime);
+      }
+      if (Input.GetKey(KeyCode.DownArrow)) {
+        transform.Rotate(Vector3.right * 90f * Time.deltaTime);
+      }
+    }
+
+    void HandleTestRay() {
+      if (testRay && line == null) {
+        line = this.gameObject.AddComponent<LineRenderer>();
+        line.material = new Material(Shader.Find("Unlit/Color"));
+        line.material.color = Color.cyan;
+        line.SetWidth(0.01f, 0.01f);
+      } else if (!testRay && line != null) {
+        DestroyTestRay();
+      }
+
+      //Handle the line
+      if (line != null) {
+        Vector3 startPoint = this.transform.position + this.transform.forward * 0.05f + this.transform.up * -0.01f;
+
+        line.SetVertexCount(2);
+        line.SetPosition(0, startPoint);
+        if (eventData.currentRaycast != null) {
+          line.SetPosition(1, eventData.worldPosition);
+        } else {
+          line.SetPosition(1, startPoint + this.transform.forward * interactDistance);
+        }
+      }
+    }
+
+    void DestroyTestRay() {
+      Destroy(line);
+      line = null;
+    }
+
+    void HandleTestInput() {
+      //Translate the mousepad to be the touchpad.
+      Vector2 axis = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+
+      //Handle "press" keys
+      foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToPressIds) {
+        if (Input.GetKeyDown(kvp.Key)) {
+          ExecutePressDown(kvp.Value);
+          ExecuteGlobalPressDown(kvp.Value);
+        } else if (Input.GetKey(kvp.Key)) {
+          ExecutePress(kvp.Value);
+          ExecuteGlobalPress(kvp.Value);
+        } else if (Input.GetKeyUp(kvp.Key)) {
+          ExecutePressUp(kvp.Value);
+          ExecutePressUp(kvp.Value);
+        }
+      }
+
+      //Handle "touch" keys
+      foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToTouchIds) {
+        if (Input.GetKeyDown(kvp.Key)) {
+          ExecuteTouchDown(kvp.Value);
+          ExecuteGlobalTouchDown(kvp.Value);
+        } else if (Input.GetKey(kvp.Key)) {
+          ExecuteTouch(kvp.Value);
+          ExecuteGlobalTouchDown(kvp.Value);
+        } else if (Input.GetKeyUp(kvp.Key)) {
+          ExecuteTouchUp(kvp.Value);
+          ExecuteGlobalTouchUp(kvp.Value);
+        }
+      }
+    }
+
     void HandleButtons() {
       int index = (int) controller.index;
 
-      //Update the eventData's information about the touchpad and trigger axes.
       eventData.touchpadAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[0]);
       eventData.triggerAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[1]);
 
@@ -259,11 +299,6 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Executes the button "press down" function on an object being pointed at.
-    /// Also creates the pairing of gameObject -> button for the button press context.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecutePressDown(EVRButtonId id) {
       GameObject go = eventData.currentRaycast;
       if (go == null)
@@ -271,24 +306,24 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          eventData.applicationMenuPress = go;
-          ExecuteEvents.Execute<IApplicationMenuPressDownHandler>(eventData.applicationMenuPress, eventData,
-            (x, y) => x.OnApplicationMenuPressDown(eventData));
+          eventData.appMenuPress = go;
+          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(eventData.appMenuPress, eventData,
+            (x, y) => x.OnPointerAppMenuPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
           eventData.gripPress = go;
-          ExecuteEvents.Execute<IGripPressDownHandler>(eventData.gripPress, eventData,
-            (x, y) => x.OnGripPressDown(eventData));
+          ExecuteEvents.Execute<IPointerGripPressDownHandler>(eventData.gripPress, eventData,
+            (x, y) => x.OnPointerGripPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
           eventData.touchpadPress = go;
-          ExecuteEvents.Execute<ITouchpadPressDownHandler>(eventData.touchpadPress, eventData,
-            (x, y) => x.OnTouchpadPressDown(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(eventData.touchpadPress, eventData,
+            (x, y) => x.OnPointerTouchpadPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
           eventData.triggerPress = go;
-          ExecuteEvents.Execute<ITriggerPressDownHandler>(eventData.triggerPress, eventData,
-            (x, y) => x.OnTriggerPressDown(eventData));
+          ExecuteEvents.Execute<IPointerTriggerPressDownHandler>(eventData.triggerPress, eventData,
+            (x, y) => x.OnPointerTriggerPressDown(eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal EVRButtonId.");
@@ -298,65 +333,55 @@ namespace FRL.IO {
       pressPairings[id] = go;
     }
 
-    /// <summary>
-    /// Executes the corresponding button "press held" function on the gameObject that is paired
-    /// in the current button press context.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecutePress(EVRButtonId id) {
       if (pressPairings[id] == null)
         return;
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          ExecuteEvents.Execute<IApplicationMenuPressHandler>(eventData.applicationMenuPress, eventData,
-            (x, y) => x.OnApplicationMenuPress(eventData));
+          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(eventData.appMenuPress, eventData,
+            (x, y) => x.OnPointerAppMenuPress(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
-          ExecuteEvents.Execute<IGripPressHandler>(eventData.gripPress, eventData,
-            (x, y) => x.OnGripPress(eventData));
+          ExecuteEvents.Execute<IPointerGripPressHandler>(eventData.gripPress, eventData,
+            (x, y) => x.OnPointerGripPress(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<ITouchpadPressHandler>(eventData.touchpadPress, eventData,
-            (x, y) => x.OnTouchpadPress(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(eventData.touchpadPress, eventData,
+            (x, y) => x.OnPointerTouchpadPress(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<ITriggerPressHandler>(eventData.triggerPress, eventData,
-            (x, y) => x.OnTriggerPress(eventData));
+          ExecuteEvents.Execute<IPointerTriggerPressHandler>(eventData.triggerPress, eventData,
+            (x, y) => x.OnPointerTriggerPress(eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal EVRButtonId.");
       }
     }
 
-    /// <summary>
-    /// Executes the button "press up" function on the gameObject that is paired
-    /// in the current button press context. Also removes the pairing.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecutePressUp(EVRButtonId id) {
       if (pressPairings[id] == null)
         return;
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          ExecuteEvents.Execute<IApplicationMenuPressUpHandler>(eventData.applicationMenuPress, eventData,
-            (x, y) => x.OnApplicationMenuPressUp(eventData));
-          eventData.applicationMenuPress = null;
+          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(eventData.appMenuPress, eventData,
+            (x, y) => x.OnPointerAppMenuPressUp(eventData));
+          eventData.appMenuPress = null;
           break;
         case EVRButtonId.k_EButton_Grip:
-          ExecuteEvents.Execute<IGripPressUpHandler>(eventData.gripPress, eventData,
-            (x, y) => x.OnGripPressUp(eventData));
+          ExecuteEvents.Execute<IPointerGripPressUpHandler>(eventData.gripPress, eventData,
+            (x, y) => x.OnPointerGripPressUp(eventData));
           eventData.gripPress = null;
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<ITouchpadPressUpHandler>(eventData.touchpadPress, eventData,
-            (x, y) => x.OnTouchpadPressUp(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(eventData.touchpadPress, eventData,
+            (x, y) => x.OnPointerTouchpadPressUp(eventData));
           eventData.touchpadPress = null;
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<ITriggerPressUpHandler>(eventData.triggerPress, eventData,
-            (x, y) => x.OnTriggerPressUp(eventData));
+          ExecuteEvents.Execute<IPointerTriggerPressUpHandler>(eventData.triggerPress, eventData,
+            (x, y) => x.OnPointerTriggerPressUp(eventData));
           eventData.triggerPress = null;
           break;
         default:
@@ -367,11 +392,6 @@ namespace FRL.IO {
       pressPairings[id] = null;
     }
 
-    /// <summary>
-    /// Executes the button touch "touch down" function on an object being pointed at.
-    /// Also creates the pairing of gameObject -> button for the button touch context.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteTouchDown(EVRButtonId id) {
       GameObject go = eventData.currentRaycast;
       if (go == null)
@@ -380,13 +400,13 @@ namespace FRL.IO {
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
           eventData.touchpadTouch = go;
-          ExecuteEvents.Execute<ITouchpadTouchDownHandler>(eventData.touchpadTouch, eventData,
-            (x, y) => x.OnTouchpadTouchDown(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(eventData.touchpadTouch, eventData,
+            (x, y) => x.OnPointerTouchpadTouchDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
           eventData.triggerTouch = go;
-          ExecuteEvents.Execute<ITriggerTouchDownHandler>(eventData.triggerTouch, eventData,
-            (x, y) => x.OnTriggerTouchDown(eventData));
+          ExecuteEvents.Execute<IPointerTriggerTouchDownHandler>(eventData.triggerTouch, eventData,
+            (x, y) => x.OnPointerTriggerTouchDown(eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal EVRButtonId.");
@@ -396,47 +416,37 @@ namespace FRL.IO {
       touchPairings[id] = go;
     }
 
-    /// <summary>
-    /// Executes the button "touch held" function on the gameObject that is paired
-    /// in the current button press context. 
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteTouch(EVRButtonId id) {
       if (touchPairings[id] == null)
         return;
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<ITouchpadTouchHandler>(eventData.touchpadTouch, eventData,
-            (x, y) => x.OnTouchpadTouch(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(eventData.touchpadTouch, eventData,
+            (x, y) => x.OnPointerTouchpadTouch(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<ITriggerTouchHandler>(eventData.triggerTouch, eventData,
-            (x, y) => x.OnTriggerTouch(eventData));
+          ExecuteEvents.Execute<IPointerTriggerTouchHandler>(eventData.triggerTouch, eventData,
+            (x, y) => x.OnPointerTriggerTouch(eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal EVRButtonId.");
       }
     }
 
-    /// <summary>
-    /// Executes the button "touch up" function on the gameObject that is paired
-    /// in the current button press context. Also removes the pairing.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteTouchUp(EVRButtonId id) {
       if (touchPairings[id] == null)
         return;
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<ITouchpadTouchUpHandler>(eventData.touchpadTouch, eventData,
-            (x, y) => x.OnTouchpadTouchUp(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(eventData.touchpadTouch, eventData,
+            (x, y) => x.OnPointerTouchpadTouchUp(eventData));
           eventData.touchpadTouch = null;
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<ITriggerTouchUpHandler>(eventData.triggerTouch, eventData,
-            (x, y) => x.OnTriggerTouchUp(eventData));
+          ExecuteEvents.Execute<IPointerTriggerTouchUpHandler>(eventData.triggerTouch, eventData,
+            (x, y) => x.OnPointerTriggerTouchUp(eventData));
           eventData.triggerTouch = null;
           break;
         default:
@@ -447,11 +457,6 @@ namespace FRL.IO {
       touchPairings[id] = null;
     }
 
-    /// <summary>
-    /// Executes the global button "press down" on all active global receivers.
-    /// Also saves a list of globalReceivers that existed at press down.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteGlobalPressDown(EVRButtonId id) {
       //Add paired list.
       pressReceivers[id] = GlobalReceiver.instances;
@@ -486,11 +491,6 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Executes the global button "press held" on all global receivers 
-    /// that were active when the button was initially pressed.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteGlobalPress(EVRButtonId id) {
       if (pressReceivers[id] == null || pressReceivers[id].Count == 0) {
         return;
@@ -526,11 +526,6 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Executes the global button "press up" on all global receivers 
-    /// that were active when the button was initially pressed.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteGlobalPressUp(EVRButtonId id) {
       if (pressReceivers[id] == null || pressReceivers[id].Count == 0) {
         return;
@@ -569,11 +564,6 @@ namespace FRL.IO {
       pressReceivers[id] = null;
     }
 
-    /// <summary>
-    /// Executes the global button "touch down" on all active global receivers.
-    /// Also saves a list of globalReceivers that existed at touch down.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteGlobalTouchDown(EVRButtonId id) {
       touchReceivers[id] = GlobalReceiver.instances;
 
@@ -595,11 +585,6 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Executes the global button "touch held" on all global receivers 
-    /// that were active when the button was initially touched.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteGlobalTouch(EVRButtonId id) {
       if (touchReceivers[id] == null || touchReceivers[id].Count == 0) {
         return;
@@ -623,11 +608,6 @@ namespace FRL.IO {
       }
     }
 
-    /// <summary>
-    /// Executes the global button "touch up" on all global receivers 
-    /// that were active when the button was initially touched.
-    /// </summary>
-    /// <param name="id">The id of the button.</param>
     private void ExecuteGlobalTouchUp(EVRButtonId id) {
       if (touchReceivers[id] == null || touchReceivers[id].Count == 0) {
         return;
@@ -654,78 +634,38 @@ namespace FRL.IO {
       touchReceivers[id] = null;
     }
 
-    /// <summary>
-    /// Returns whether or not the EVRButtonId button has been pressed down this frame
-    /// on the controller with the index.
-    /// </summary>
-    /// <param name="index">The index of the controller.</param>
-    /// <param name="button">The EVRButtonId of the button.</param>
-    /// <returns></returns>
     private bool GetPressDown(int index, EVRButtonId button) {
       return SteamVR_Controller.Input(index).GetPressDown(button);
     }
 
-    /// <summary>
-    /// Returns whether or not the EVRButtonId button has been pressed this frame
-    /// on the controller with the index.
-    /// </summary>
-    /// <param name="index">The index of the controller.</param>
-    /// <param name="button">The EVRButtonId of the button.</param>
-    /// <returns></returns>
     private bool GetPress(int index, EVRButtonId button) {
       return SteamVR_Controller.Input(index).GetPress(button);
     }
 
-    /// <summary>
-    /// Returns whether or not the EVRButtonId button has been released this frame.
-    /// on the controller with the index.
-    /// </summary>
-    /// <param name="index">The index of the controller.</param>
-    /// <param name="button">The EVRButtonId of the button.</param>
-    /// <returns></returns>
     private bool GetPressUp(int index, EVRButtonId button) {
       return SteamVR_Controller.Input(index).GetPressUp(button);
     }
 
-    /// <summary>
-    /// Returns whether or not the EVRButtonId button has been touched down this frame
-    /// on the controller with the index.
-    /// </summary>
-    /// <param name="index">The index of the controller.</param>
-    /// <param name="button">The EVRButtonId of the button.</param>
-    /// <returns></returns>
     private bool GetTouchDown(int index, EVRButtonId button) {
       return SteamVR_Controller.Input(index).GetTouchDown(button);
     }
 
-    /// <summary>
-    /// Returns whether or not the EVRButtonId button has been touched this frame
-    /// on the controller with the index.
-    /// </summary>
-    /// <param name="index">The index of the controller.</param>
-    /// <param name="button">The EVRButtonId of the button.</param>
-    /// <returns></returns>
     private bool GetTouch(int index, EVRButtonId button) {
       return SteamVR_Controller.Input(index).GetTouch(button);
     }
 
-    /// <summary>
-    /// Returns whether or not the EVRButtonId button has been touch released this frame
-    /// on the controller with the index.
-    /// </summary>
-    /// <param name="index">The index of the controller.</param>
-    /// <param name="button">The EVRButtonId of the button.</param>
-    /// <returns></returns>
     private bool GetTouchUp(int index, EVRButtonId button) {
       return SteamVR_Controller.Input(index).GetTouchUp(button);
     }
-    
 
-    /// <summary>
-    /// EventData contains all relevant information to the module at any given frame.
-    /// It is passed along in and IViveHandler function call.
-    /// </summary>
     public class EventData : BaseEventData {
+
+      /// <summary>
+      /// The ViveControllerModule that manages the instance of ViveEventData.
+      /// </summary>
+      public ViveControllerModule module {
+        get; private set;
+      }
 
       /// <summary>
       /// The SteamVR Tracked Object connected to the module.
@@ -765,7 +705,7 @@ namespace FRL.IO {
       /// <summary>
       /// The GameObject bound to the current press context of the Application Menu button.
       /// </summary>
-      public GameObject applicationMenuPress {
+      public GameObject appMenuPress {
         get; internal set;
       }
 
@@ -818,23 +758,25 @@ namespace FRL.IO {
         get; internal set;
       }
 
-      internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject) : base(module) {
+      internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject)
+        : base(module) {
+        this.module = module;
         this.steamVRTrackedObject = trackedObject;
       }
 
-                              /// <summary>
-                              /// Reset the event data fields. 
-                              /// </summary>
-                              /// <remarks>
-                              /// There is currently a warning because this hides AbstractEventData.Reset. This will be removed when
-                              /// we no longer rely on Unity's event system paradigm.
-                              /// </remarks>
+      /// <summary>
+      /// Reset the event data fields. 
+      /// </summary>
+      /// <remarks>
+      /// There is currently a warning because this hides AbstractEventData.Reset. This will be removed when
+      /// we no longer rely on Unity's event system paradigm.
+      /// </remarks>
       internal void Reset() {
         currentRaycast = null;
         previousRaycast = null;
         touchpadAxis = Vector2.zero;
         triggerAxis = Vector2.zero;
-        applicationMenuPress = null;
+        appMenuPress = null;
         gripPress = null;
         touchpadPress = null;
         triggerPress = null;

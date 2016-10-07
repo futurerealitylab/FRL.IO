@@ -5,93 +5,93 @@ using UnityEngine.EventSystems;
 namespace FRL.IO {
 	public interface IViveHandler : IPointerViveHandler, IGlobalViveHandler { }
 
-	public interface IPointerViveHandler : IApplicationMenuHandler, IGripHandler, ITouchpadHandler, ITriggerHandler { }
+	public interface IPointerViveHandler : IPointerAppMenuHandler, IPointerGripHandler, IPointerTouchpadHandler, IPointerTriggerHandler { }
 
 	//APPLICATION MENU HANDLER
-	public interface IApplicationMenuHandler : IApplicationMenuPressDownHandler, IApplicationMenuPressHandler, IApplicationMenuPressUpHandler { }
+	public interface IPointerAppMenuHandler : IPointerAppMenuPressDownHandler, IPointerAppMenuPressHandler, IPointerAppMenuPressUpHandler { }
 
-	public interface IApplicationMenuPressDownHandler : IEventSystemHandler {
-		void OnApplicationMenuPressDown(ViveControllerModule.EventData eventData);
+	public interface IPointerAppMenuPressDownHandler : IEventSystemHandler {
+		void OnPointerAppMenuPressDown(ViveControllerModule.EventData eventData);
 	}
 
-	public interface IApplicationMenuPressHandler : IEventSystemHandler {
-		void OnApplicationMenuPress(ViveControllerModule.EventData eventData);
+	public interface IPointerAppMenuPressHandler : IEventSystemHandler {
+		void OnPointerAppMenuPress(ViveControllerModule.EventData eventData);
 	}
 
-	public interface IApplicationMenuPressUpHandler : IEventSystemHandler {
-		void OnApplicationMenuPressUp(ViveControllerModule.EventData eventData);
+	public interface IPointerAppMenuPressUpHandler : IEventSystemHandler {
+		void OnPointerAppMenuPressUp(ViveControllerModule.EventData eventData);
 	}
 
 	//GRIP HANDLER
-	public interface IGripHandler : IGripPressDownHandler, IGripPressHandler, IGripPressUpHandler { }
+	public interface IPointerGripHandler : IPointerGripPressDownHandler, IPointerGripPressHandler, IPointerGripPressUpHandler { }
 
-	public interface IGripPressDownHandler : IEventSystemHandler {
-		void OnGripPressDown(ViveControllerModule.EventData eventData);
+	public interface IPointerGripPressDownHandler : IEventSystemHandler {
+		void OnPointerGripPressDown(ViveControllerModule.EventData eventData);
 	}
 
-	public interface IGripPressHandler : IEventSystemHandler {
-		void OnGripPress(ViveControllerModule.EventData eventData);
+	public interface IPointerGripPressHandler : IEventSystemHandler {
+		void OnPointerGripPress(ViveControllerModule.EventData eventData);
 	}
-	public interface IGripPressUpHandler : IEventSystemHandler {
-		void OnGripPressUp(ViveControllerModule.EventData eventData);
+	public interface IPointerGripPressUpHandler : IEventSystemHandler {
+		void OnPointerGripPressUp(ViveControllerModule.EventData eventData);
 	}
 
 	//TOUCHPAD HANDLER
-	public interface ITouchpadHandler : ITouchpadPressSetHandler, ITouchpadTouchSetHandler { }
-	public interface ITouchpadPressSetHandler : ITouchpadPressDownHandler, ITouchpadPressHandler, ITouchpadPressUpHandler { }
-	public interface ITouchpadTouchSetHandler : ITouchpadTouchDownHandler, ITouchpadTouchHandler, ITouchpadTouchUpHandler { }
+	public interface IPointerTouchpadHandler : IPointerTouchpadPressSetHandler, IPointerTouchpadTouchSetHandler { }
+	public interface IPointerTouchpadPressSetHandler : IPointerTouchpadPressDownHandler, IPointerTouchpadPressHandler, IPointerTouchpadPressUpHandler { }
+	public interface IPointerTouchpadTouchSetHandler : IPointerTouchpadTouchDownHandler, IPointerTouchpadTouchHandler, IPointerTouchpadTouchUpHandler { }
 
-	public interface ITouchpadPressDownHandler : IEventSystemHandler {
-		void OnTouchpadPressDown(ViveControllerModule.EventData eventData);
+	public interface IPointerTouchpadPressDownHandler : IEventSystemHandler {
+		void OnPointerTouchpadPressDown(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITouchpadPressHandler : IEventSystemHandler {
-		void OnTouchpadPress(ViveControllerModule.EventData eventData);
+	public interface IPointerTouchpadPressHandler : IEventSystemHandler {
+		void OnPointerTouchpadPress(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITouchpadPressUpHandler : IEventSystemHandler {
-		void OnTouchpadPressUp(ViveControllerModule.EventData eventData);
+	public interface IPointerTouchpadPressUpHandler : IEventSystemHandler {
+		void OnPointerTouchpadPressUp(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITouchpadTouchDownHandler : IEventSystemHandler {
-		void OnTouchpadTouchDown(ViveControllerModule.EventData eventData);
+	public interface IPointerTouchpadTouchDownHandler : IEventSystemHandler {
+		void OnPointerTouchpadTouchDown(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITouchpadTouchHandler : IEventSystemHandler {
-		void OnTouchpadTouch(ViveControllerModule.EventData eventData);
+	public interface IPointerTouchpadTouchHandler : IEventSystemHandler {
+		void OnPointerTouchpadTouch(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITouchpadTouchUpHandler : IEventSystemHandler {
-		void OnTouchpadTouchUp(ViveControllerModule.EventData eventData);
+	public interface IPointerTouchpadTouchUpHandler : IEventSystemHandler {
+		void OnPointerTouchpadTouchUp(ViveControllerModule.EventData eventData);
 	}
 
 	//TRIGGER HANDLER
-	public interface ITriggerHandler : ITriggerPressSetHandler, ITriggerTouchSetHandler { }
-	public interface ITriggerPressSetHandler : ITriggerPressDownHandler, ITriggerPressHandler, ITriggerPressUpHandler { }
-	public interface ITriggerTouchSetHandler : ITriggerTouchDownHandler, ITriggerTouchHandler, ITriggerTouchUpHandler { }
+	public interface IPointerTriggerHandler : IPointerTriggerPressSetHandler, IPointerTriggerTouchSetHandler { }
+	public interface IPointerTriggerPressSetHandler : IPointerTriggerPressDownHandler, IPointerTriggerPressHandler, IPointerTriggerPressUpHandler { }
+	public interface IPointerTriggerTouchSetHandler : IPointerTriggerTouchDownHandler, IPointerTriggerTouchHandler, IPointerTriggerTouchUpHandler { }
 
-	public interface ITriggerPressDownHandler : IEventSystemHandler {
-		void OnTriggerPressDown(ViveControllerModule.EventData eventData);
+	public interface IPointerTriggerPressDownHandler : IEventSystemHandler {
+		void OnPointerTriggerPressDown(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITriggerPressHandler : IEventSystemHandler {
-		void OnTriggerPress(ViveControllerModule.EventData eventData);
+	public interface IPointerTriggerPressHandler : IEventSystemHandler {
+		void OnPointerTriggerPress(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITriggerPressUpHandler : IEventSystemHandler {
-		void OnTriggerPressUp(ViveControllerModule.EventData eventData);
+	public interface IPointerTriggerPressUpHandler : IEventSystemHandler {
+		void OnPointerTriggerPressUp(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITriggerTouchDownHandler : IEventSystemHandler {
-		void OnTriggerTouchDown(ViveControllerModule.EventData eventData);
+	public interface IPointerTriggerTouchDownHandler : IEventSystemHandler {
+		void OnPointerTriggerTouchDown(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITriggerTouchHandler : IEventSystemHandler {
-		void OnTriggerTouch(ViveControllerModule.EventData eventData);
+	public interface IPointerTriggerTouchHandler : IEventSystemHandler {
+		void OnPointerTriggerTouch(ViveControllerModule.EventData eventData);
 	}
 
-	public interface ITriggerTouchUpHandler : IEventSystemHandler {
-		void OnTriggerTouchUp(ViveControllerModule.EventData eventData);
+	public interface IPointerTriggerTouchUpHandler : IEventSystemHandler {
+		void OnPointerTriggerTouchUp(ViveControllerModule.EventData eventData);
 	}
 
 

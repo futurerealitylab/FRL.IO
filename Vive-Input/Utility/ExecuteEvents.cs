@@ -233,6 +233,9 @@ namespace FRL.IO {
 
     public static bool Execute<T>(GameObject target, BaseEventData eventData, EventFunction<T> functor) where T : IEventSystemHandler {
 
+      if (target == null)
+        return false;
+
       bool executed = false;
       foreach (Component component in target.GetComponents<Component>()) {
         if (ShouldSendToComponent<T>(component)) {

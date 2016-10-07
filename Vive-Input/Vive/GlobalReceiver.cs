@@ -7,11 +7,12 @@ namespace FRL.IO {
   /// <summary>
   /// Generic receiver object for global IO.
   /// <remarks>
-  /// Extending this component allows for it to receive global input from any module.
+  /// Attaching this component to a GameObject allows for it to receive
+  /// global inputs from Holojam.IO input systems.
   /// </remarks>
   /// </summary>
   /// <seealso cref="UnityEngine.MonoBehaviour" />
-  public class GlobalReceiver : MonoBehaviour {
+  public sealed class GlobalReceiver : MonoBehaviour {
 
     /// <summary>
     /// Optional paired module for instance.
@@ -33,7 +34,7 @@ namespace FRL.IO {
     public static List<GlobalReceiver> instances {
       get {
         lock (instanceLock) {
-          return GetCopyOfInstances();
+          return instanceCache;
         }
       }
     }
@@ -51,7 +52,7 @@ namespace FRL.IO {
     /// <summary>
     /// Adds this instance to the list of instances, when it is enabled.
     /// </summary>
-    protected virtual void OnEnable() {
+    private void OnEnable() {
       lock (instanceLock) {
         instanceCache.Add(this);
       }
@@ -60,7 +61,7 @@ namespace FRL.IO {
     /// <summary>
     /// Removes this instance from the list of instances, when it is disabled.
     /// </summary>
-    protected virtual void OnDisable() {
+    private void OnDisable() {
       lock (instanceLock) {
         instanceCache.Remove(this);
       }
