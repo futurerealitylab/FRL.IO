@@ -21,7 +21,7 @@
 
 1) **Version**
 
-1.00 : 10-6-2014
+1.00 : 10-6-2016
 - First initial release. The library now operates independently from 
   Unity's event system.
 	- SteamVR Plugin 1.1.1
