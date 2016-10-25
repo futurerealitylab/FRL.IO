@@ -15,6 +15,10 @@ namespace FRL.IO {
     void OnPointerExit(PointerEventData eventData);
   }
 
+  public interface IPointerStayHandler : IEventSystemHandler {
+    void OnPointerStay(PointerEventData eventData);
+  }
+
   public interface IPointerDownHandler : IEventSystemHandler {
     void OnPointerDown(PointerEventData eventData);
   }

@@ -184,6 +184,11 @@ namespace FRL.IO {
           eventData.currentRaycast, eventData, ExecuteEvents.pointerEnterHandler);
         ExecuteEvents.Execute<IPointerExitHandler>(
           eventData.previousRaycast, eventData, ExecuteEvents.pointerExitHandler);
+      } else if (eventData.currentRaycast != null) {
+        ExecuteEvents.Execute<IPointerStayHandler>(
+          eventData.currentRaycast, eventData, (x, y) => {
+            x.OnPointerStay(eventData);
+          });
       }
     }
 
@@ -658,7 +663,7 @@ namespace FRL.IO {
       return SteamVR_Controller.Input(index).GetTouchUp(button);
     }
 
-    public class EventData : BaseEventData {
+    public class EventData : PointerEventData {
 
       /// <summary>
       /// The ViveControllerModule that manages the instance of ViveEventData.
@@ -744,19 +749,19 @@ namespace FRL.IO {
         get; internal set;
       }
 
-      /// <summary>
-      /// The world normal of the current raycast, if it exists. Otherwise, this will equal Vector3.zero.
-      /// </summary>
-      public Vector3 worldNormal {
-        get; internal set;
-      }
+      ///// <summary>
+      ///// The world normal of the current raycast, if it exists. Otherwise, this will equal Vector3.zero.
+      ///// </summary>
+      //public Vector3 worldNormal {
+      //  get; internal set;
+      //}
 
-      /// <summary>
-      /// The world position of the current raycast, if it exists. Otherwise, this will equal Vector3.zero.
-      /// </summary>
-      public Vector3 worldPosition {
-        get; internal set;
-      }
+      ///// <summary>
+      ///// The world position of the current raycast, if it exists. Otherwise, this will equal Vector3.zero.
+      ///// </summary>
+      //public Vector3 worldPosition {
+      //  get; internal set;
+      //}
 
       internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject)
         : base(module) {
