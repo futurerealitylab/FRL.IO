@@ -81,7 +81,7 @@ namespace FRL.IO {
         touchReceivers.Add(button, null);
       }
     }
-    
+
     protected void OnDisable() {
 
       foreach (EVRButtonId button in pressIds) {
@@ -115,30 +115,30 @@ namespace FRL.IO {
     }
 
     public void HideModel() {
-      SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel> ();
+      SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel>();
       if (model) {
-        model.gameObject.SetActive (false);
+        model.gameObject.SetActive(false);
       }
     }
 
     public void ShowModel() {
-      SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel> ();
+      SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel>();
       if (model) {
-        model.gameObject.SetActive (true);
+        model.gameObject.SetActive(true);
       }
     }
 
-    IEnumerator Pulse (float duration, ushort strength) {
+    IEnumerator Pulse(float duration, ushort strength) {
       float startTime = Time.realtimeSinceStartup;
       while (Time.realtimeSinceStartup - startTime < duration) {
-        SteamVR_Controller.Input((int) controller.index).TriggerHapticPulse (strength);
+        SteamVR_Controller.Input((int) controller.index).TriggerHapticPulse(strength);
         yield return null;
       }
     }
 
     // Duration in seconds, strength is a value from 0 to 3999.
     public void TriggerHapticPulse(float duration, ushort strength) {
-      StartCoroutine (Pulse (duration, strength));
+      StartCoroutine(Pulse(duration, strength));
     }
 
     private void Raycast() {
@@ -155,7 +155,7 @@ namespace FRL.IO {
         eventData.SetCurrentRaycast(null, Vector3.zero, Vector3.zero);
         return;
       }
-	
+
       //find the closest object.
       RaycastHit minHit = hits[0];
       for (int i = 0; i < hits.Count; i++) {
@@ -165,7 +165,7 @@ namespace FRL.IO {
       }
 
       //make sure the closest object is able to be interacted with.
-      if (interactTag != null && interactTag.Length > 1 
+      if (interactTag != null && interactTag.Length > 1
         && !minHit.transform.tag.Equals(interactTag)) {
         eventData.SetCurrentRaycast(null, Vector3.zero, Vector3.zero);
       } else {
@@ -272,8 +272,16 @@ namespace FRL.IO {
     void HandleButtons() {
       int index = (int) controller.index;
 
+      float previousX = eventData.triggerAxis.x;
+
       eventData.touchpadAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[0]);
       eventData.triggerAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[1]);
+
+      //Click
+      if (previousX != 1.0f && eventData.triggerAxis.x == 1f) {
+        ExecuteTriggerClick();
+      }
+
 
       //Press
       foreach (EVRButtonId button in pressIds) {
@@ -637,6 +645,20 @@ namespace FRL.IO {
 
       //Remove paired list.
       touchReceivers[id] = null;
+    }
+
+    private void ExecuteTriggerClick() {
+      if (eventData.currentRaycast != null) {
+        ExecuteEvents.Execute<IPointerTriggerClickHandler>(eventData.currentRaycast, eventData, (x, y) => {
+          x.OnPointerTriggerClick(eventData);
+        });
+      }
+
+      foreach (GlobalReceiver r in GlobalReceiver.instances) {
+        ExecuteEvents.Execute<IGlobalTriggerClickHandler>(r.gameObject, eventData, (x, y) => {
+          x.OnGlobalTriggerClick(eventData);
+        });
+      }
     }
 
     private bool GetPressDown(int index, EVRButtonId button) {

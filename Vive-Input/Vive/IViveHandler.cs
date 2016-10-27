@@ -94,6 +94,9 @@ namespace FRL.IO {
 		void OnPointerTriggerTouchUp(ViveControllerModule.EventData eventData);
 	}
 
+  public interface IPointerTriggerClickHandler : IEventSystemHandler {
+    void OnPointerTriggerClick(ViveControllerModule.EventData eventData);
+  }
 
 	//GLOBAL VIVE HANDLER: ALL Global BUTTON SETS
 	public interface IGlobalViveHandler : IGlobalGripHandler, IGlobalTriggerHandler, IGlobalApplicationMenuHandler, IGlobalTouchpadHandler { }
@@ -142,6 +145,10 @@ namespace FRL.IO {
 	public interface IGlobalTriggerTouchUpHandler : IEventSystemHandler {
 		void OnGlobalTriggerTouchUp(ViveControllerModule.EventData eventData);
 	}
+
+  public interface IGlobalTriggerClickHandler : IEventSystemHandler {
+    void OnGlobalTriggerClick(ViveControllerModule.EventData eventData);
+  }
 
 	//GLOBAL APPLICATION MENU
 	public interface IGlobalApplicationMenuHandler : IGlobalApplicationMenuPressDownHandler, IGlobalApplicationMenuPressHandler, IGlobalApplicationMenuPressUpHandler { }
