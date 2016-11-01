@@ -8,6 +8,9 @@ using FRL.IO;
 [RequireComponent(typeof(Collider))]
 public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
 
+  /// <summary>
+  /// Expect a GlobalGrabber.cs component on the grabbing controller.
+  /// </summary>
   public bool expectGrabber = true;
 
   private GlobalReceiver receiver;
@@ -30,6 +33,7 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
     collider = this.GetComponent<Collider>();
     rbody = this.GetComponent<Rigidbody>();
   }
+
 
   void OnDisable() {
     if (grabbingModule != null) {
@@ -92,6 +96,7 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
     grabbingModule = null;
     collider.isTrigger = false;
   }
+
 
 
   /// <summary>
