@@ -15,7 +15,13 @@ namespace FRL.IO {
       }
     }
 
+    
+
     public void Teleport(Vector3 position) {
+      if (!this.isActiveAndEnabled) {
+        return;
+      }
+
       if (teleportRoutine == null) {
         teleportRoutine = StartCoroutine(TeleportWithFade(position));
       }

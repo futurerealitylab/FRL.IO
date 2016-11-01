@@ -28,6 +28,9 @@ namespace FRL.IO {
     private List<RaycastHit> hits = new List<RaycastHit>();
     private Ray ray;
 
+    private bool hasBeenProcessed = false;
+
+
     //Steam Controller button and axis ids
     private EVRButtonId[] pressIds = new EVRButtonId[] {
       EVRButtonId.k_EButton_ApplicationMenu,
@@ -48,7 +51,7 @@ namespace FRL.IO {
 
 
     private Dictionary<KeyCode, EVRButtonId> keysToPressIds = new Dictionary<KeyCode, EVRButtonId> {
-      {KeyCode.A,EVRButtonId.k_EButton_ApplicationMenu},
+      {KeyCode.Q,EVRButtonId.k_EButton_ApplicationMenu},
       {KeyCode.G,EVRButtonId.k_EButton_Grip},
       {KeyCode.P,EVRButtonId.k_EButton_SteamVR_Touchpad},
       {KeyCode.T,EVRButtonId.k_EButton_SteamVR_Trigger}
@@ -101,6 +104,16 @@ namespace FRL.IO {
     }
 
     void Update() {
+      if (!hasBeenProcessed) {
+        Process();
+      }
+    }
+
+    void LateUpdate() {
+      hasBeenProcessed = false;
+    }
+
+    void Process() {
       this.Raycast();
       this.UpdateCurrentObject();
 
@@ -112,6 +125,7 @@ namespace FRL.IO {
 
       this.HandleTestInput();
       this.HandleTestRay();
+      hasBeenProcessed = true;
     }
 
     public void HideModel() {
@@ -139,6 +153,13 @@ namespace FRL.IO {
     // Duration in seconds, strength is a value from 0 to 3999.
     public void TriggerHapticPulse(float duration, ushort strength) {
       StartCoroutine(Pulse(duration, strength));
+    }
+
+    public ViveControllerModule.EventData GetEventData() {
+      if (!hasBeenProcessed) {
+        Process();
+      }
+      return eventData;
     }
 
     private void Raycast() {
@@ -701,19 +722,6 @@ namespace FRL.IO {
         get; private set;
       }
 
-      /// <summary>
-      /// The GameObject currently hit by a raycast from the module.
-      /// </summary>
-      public GameObject currentRaycast {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The GameObject previously hit by a raycast from the module.
-      /// </summary>
-      public GameObject previousRaycast {
-        get; internal set;
-      }
 
       /// <summary>
       /// The current touchpad axis values of the controller connected to the module.
@@ -770,20 +778,6 @@ namespace FRL.IO {
       public GameObject triggerTouch {
         get; internal set;
       }
-
-      ///// <summary>
-      ///// The world normal of the current raycast, if it exists. Otherwise, this will equal Vector3.zero.
-      ///// </summary>
-      //public Vector3 worldNormal {
-      //  get; internal set;
-      //}
-
-      ///// <summary>
-      ///// The world position of the current raycast, if it exists. Otherwise, this will equal Vector3.zero.
-      ///// </summary>
-      //public Vector3 worldPosition {
-      //  get; internal set;
-      //}
 
       internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject)
         : base(module) {

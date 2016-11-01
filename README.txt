@@ -103,7 +103,7 @@ How to test without an HTC Vive:
  - The arrow keys will rotate the object around the x/y axes.
  - The following letter keys will emulate corresponding button calls:
 
-	- A: AppMenu press
+	- Q: AppMenu press
 	- G: Grip press
 	- P: Touchpad press
 	- T: Trigger press
@@ -221,6 +221,7 @@ IViveHandler:
 ------- IGlobalTriggerTouchDownHandler.OnGlobalTriggerTouchDown()
 ------- IGlobalTriggerTouchHandler.OnGlobalTriggerTouch()
 ------- IGlobalTriggerTouchUpHandler.OnGlobalTriggerTouchUp()
+----- IGlobalTriggerClickHandler.OnGlobalTriggerPressUp()
 
 
 -------------------------------------------------------------------------------

@@ -17,6 +17,20 @@ namespace FRL.IO {
       get; internal set;
     }
 
+    /// <summary>
+    /// The GameObject currently hit by a raycast from the module.
+    /// </summary>
+    public GameObject currentRaycast {
+      get; internal set;
+    }
+
+    /// <summary>
+    /// The GameObject previously hit by a raycast from the module.
+    /// </summary>
+    public GameObject previousRaycast {
+      get; internal set;
+    }
+
     public PointerEventData(BaseInputModule module) : base(module) {
 
     }
