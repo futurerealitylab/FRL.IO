@@ -266,6 +266,9 @@ namespace FRL.IO {
         if (Input.GetKeyDown(kvp.Key)) {
           ExecutePressDown(kvp.Value);
           ExecuteGlobalPressDown(kvp.Value);
+          if (kvp.Value == EVRButtonId.k_EButton_SteamVR_Trigger) {
+            ExecuteTriggerClick();
+          }
         } else if (Input.GetKey(kvp.Key)) {
           ExecutePress(kvp.Value);
           ExecuteGlobalPress(kvp.Value);
