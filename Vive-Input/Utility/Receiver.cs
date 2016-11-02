@@ -12,7 +12,7 @@ namespace FRL.IO {
   /// </remarks>
   /// </summary>
   /// <seealso cref="UnityEngine.MonoBehaviour" />
-  public sealed class GlobalReceiver : MonoBehaviour {
+  public sealed class Receiver : MonoBehaviour {
 
     /// <summary>
     /// Optional paired module for instance.
@@ -22,8 +22,16 @@ namespace FRL.IO {
     /// </summary>
     public BaseInputModule module;
 
-    private static List<GlobalReceiver> instanceCache = new List<GlobalReceiver>();
+    private static List<Receiver> instanceCache = new List<Receiver>();
     private static System.Object instanceLock = new System.Object();
+
+
+    private void Awake() {
+      BaseInputModule mod = this.GetComponent<BaseInputModule>();
+      if (module == null && mod != null) {
+        module = mod;
+      }
+    }
 
     /// <summary>
     /// Gets the current instances of GlobalReceiver.
@@ -31,7 +39,7 @@ namespace FRL.IO {
     /// <value>
     /// Returns a copy of the instances.
     /// </value>
-    public static List<GlobalReceiver> instances {
+    public static List<Receiver> instances {
       get {
         lock (instanceLock) {
           return instanceCache;
@@ -43,9 +51,9 @@ namespace FRL.IO {
     /// Returns a copied list of instances of GlobalReceiver.
     /// </summary>
     /// <returns></returns>
-    public static List<GlobalReceiver> GetCopyOfInstances() {
+    public static List<Receiver> GetCopyOfInstances() {
       lock (instanceLock) {
-        return new List<GlobalReceiver>(instanceCache);
+        return new List<Receiver>(instanceCache);
       }
     }
 

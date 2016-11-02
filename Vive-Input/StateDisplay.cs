@@ -12,7 +12,7 @@ public class StateDisplay : MonoBehaviour {
   private Text text;
 
   private static Dictionary<Type, string> stateNames = new Dictionary<Type, string>() {
-    {typeof(GlobalGrabber), "Grab" },
+    {typeof(Grabber), "Grab" },
     {typeof(TeleportController), "Teleport" }
   };
 

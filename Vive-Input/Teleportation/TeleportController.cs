@@ -3,8 +3,8 @@ using System.Collections;
 using FRL.IO;
 using System;
 
-[RequireComponent(typeof(GlobalReceiver))]
-public class TeleportController : MonoBehaviour, IGlobalTriggerPressDownHandler {
+[RequireComponent(typeof(Receiver))]
+public class TeleportController : MonoBehaviour, IGlobalTriggerClickHandler {
 
   private static Color validCastColor = Color.green;
   private static Color invalidCastColor = Color.red;
@@ -14,12 +14,12 @@ public class TeleportController : MonoBehaviour, IGlobalTriggerPressDownHandler 
   public GameObject cursor;
   public LineRenderer line;
 
-  private GlobalReceiver receiver;
+  private Receiver receiver;
 
   private static Coroutine teleportRoutine;
 
   void Awake() {
-    receiver = this.GetComponent<GlobalReceiver>();
+    receiver = this.GetComponent<Receiver>();
   }
 
   void Update() {
@@ -69,7 +69,7 @@ public class TeleportController : MonoBehaviour, IGlobalTriggerPressDownHandler 
     }
   }
 
-  void IGlobalTriggerPressDownHandler.OnGlobalTriggerPressDown(ViveControllerModule.EventData eventData) {
+  void IGlobalTriggerClickHandler.OnGlobalTriggerClick(ViveControllerModule.EventData eventData) {
     if (eventData.currentRaycast != null && eventData.currentRaycast.GetComponent<TeleportLocation>() != null) {
       Teleport(eventData.worldPosition);
     }

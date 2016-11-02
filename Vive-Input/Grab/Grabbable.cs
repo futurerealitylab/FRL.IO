@@ -2,20 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using FRL.IO;
+using System;
 
 //Require a GlobalReceiver component and a Collider component on this gameObject.
-[RequireComponent(typeof(GlobalReceiver))]
+[RequireComponent(typeof(Receiver))]
 [RequireComponent(typeof(Collider))]
-public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
+public class Grabbable : MonoBehaviour, IGlobalTriggerPressSetHandler, IPointerTriggerPressSetHandler {
 
   /// <summary>
   /// Expect a GlobalGrabber.cs component on the grabbing controller.
   /// </summary>
   public bool expectGrabber = true;
 
-  private GlobalReceiver receiver;
-
-  private Collider collider;
+  public bool pointerGrab = true;
+  public bool colliderGrab = true;
+  
+  private new Collider collider;
   private Rigidbody rbody;
 
   private Vector3 offset = Vector3.zero;
@@ -27,8 +29,6 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
   private int savedPosCount = 60;
 
   void Awake() {
-    //Get the GlobalReceiver component on this gameObject.
-    receiver = this.GetComponent<GlobalReceiver>();
     //Get the Collider component on this gameObject.
     collider = this.GetComponent<Collider>();
     rbody = this.GetComponent<Rigidbody>();
@@ -43,7 +43,6 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
 
 
   void Grab(BaseInputModule module) {
-    Debug.Log(name + " grabbed by: " + module.name);
     //Bind the module to this object.
     grabbingModule = module;
     //Save the offset between the module and this object. Undo the current rotation of the module
@@ -60,7 +59,6 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
   }
 
   void Hold(BaseInputModule module) {
-    Debug.Log(name + " held by: " + module.name);
     this.transform.position = grabbingModule.transform.position + grabbingModule.transform.rotation * offset;
     this.transform.rotation = grabbingModule.transform.rotation * rotOffset;
 
@@ -71,8 +69,6 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
   }
 
   void Release(BaseInputModule module) {
-    Debug.Log(name + " released by: " + module.name);
-
     if (rbody) {
       rbody.isKinematic = false;
 
@@ -106,11 +102,11 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
   public void OnGlobalTriggerPressDown(ViveControllerModule.EventData eventData) {
     //Only "grab" the object if it's within the bounds of the object.
     //If the object has already been grabbed, ignore this event call.
-    if (collider.bounds.Contains(eventData.module.transform.position) && grabbingModule == null) {
+    if (collider.bounds.Contains(eventData.viveControllerModule.transform.position) && grabbingModule == null && colliderGrab) {
       //Check for a GlobalGrabber if this object should expect one.
-      if (!expectGrabber || (expectGrabber && eventData.module.GetComponent<GlobalGrabber>() != null
-        && eventData.module.GetComponent<GlobalGrabber>().isActiveAndEnabled)) {
-        Grab(eventData.module);
+      if (!expectGrabber || (expectGrabber && eventData.viveControllerModule.GetComponent<Grabber>() != null
+        && eventData.viveControllerModule.GetComponent<Grabber>().isActiveAndEnabled)) {
+        Grab(eventData.viveControllerModule);
       }
     }
   }
@@ -121,16 +117,16 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
   /// <param name="eventData">The corresponding event data for the module.</param>
   public void OnGlobalTriggerPress(ViveControllerModule.EventData eventData) {
     //Only accept this call if it's from the module currently grabbing this object.
-    if (grabbingModule == eventData.module) {
+    if (grabbingModule == eventData.viveControllerModule) {
       //Check for a GlobalGrabber if this object should expect one.
       if (!expectGrabber) {
-        Hold(eventData.module);
+        Hold(eventData.viveControllerModule);
       } else if (expectGrabber) {
-        GlobalGrabber grabber = eventData.module.GetComponent<GlobalGrabber>();
+        Grabber grabber = eventData.viveControllerModule.GetComponent<Grabber>();
         if (grabber != null && grabber.isActiveAndEnabled) {
-          Hold(eventData.module);
+          Hold(eventData.viveControllerModule);
         } else {
-          Release(eventData.module);
+          Release(eventData.viveControllerModule);
         }
       }
     }
@@ -143,8 +139,44 @@ public class GlobalGrabbable : MonoBehaviour,IGlobalTriggerPressSetHandler {
   /// <param name="eventData">The corresponding event data for the module.</param>
   public void OnGlobalTriggerPressUp(ViveControllerModule.EventData eventData) {
     //If the grabbing module releases it's trigger, unbind it from this object.
-    if (grabbingModule == eventData.module) {
-      Release(eventData.module);
+    if (grabbingModule == eventData.viveControllerModule) {
+      Release(eventData.viveControllerModule);
+    }
+  }
+
+  void IPointerTriggerPressDownHandler.OnPointerTriggerPressDown(ViveControllerModule.EventData eventData) {
+    //Only "grab" the object if it's within the bounds of the object.
+    //If the object has already been grabbed, ignore this event call.
+    if (grabbingModule == null && pointerGrab) {
+      //Check for a GlobalGrabber if this object should expect one.
+      if (!expectGrabber || (expectGrabber && eventData.viveControllerModule.GetComponent<Grabber>() != null
+        && eventData.viveControllerModule.GetComponent<Grabber>().isActiveAndEnabled)) {
+        Grab(eventData.viveControllerModule);
+      }
+    }
+  }
+
+  void IPointerTriggerPressHandler.OnPointerTriggerPress(ViveControllerModule.EventData eventData) {
+    //Only accept this call if it's from the module currently grabbing this object.
+    if (grabbingModule == eventData.viveControllerModule) {
+      //Check for a GlobalGrabber if this object should expect one.
+      if (!expectGrabber) {
+        Hold(eventData.viveControllerModule);
+      } else if (expectGrabber) {
+        Grabber grabber = eventData.viveControllerModule.GetComponent<Grabber>();
+        if (grabber != null && grabber.isActiveAndEnabled) {
+          Hold(eventData.viveControllerModule);
+        } else {
+          Release(eventData.viveControllerModule);
+        }
+      }
+    }
+  }
+
+  void IPointerTriggerPressUpHandler.OnPointerTriggerPressUp(ViveControllerModule.EventData eventData) {
+    //If the grabbing module releases it's trigger, unbind it from this object.
+    if (grabbingModule == eventData.viveControllerModule) {
+      Release(eventData.viveControllerModule);
     }
   }
 }

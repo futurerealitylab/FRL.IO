@@ -19,9 +19,9 @@ namespace FRL.IO {
     public float interactDistance = 10f;
 
     private Dictionary<EVRButtonId, GameObject> pressPairings = new Dictionary<EVRButtonId, GameObject>();
-    private Dictionary<EVRButtonId, List<GlobalReceiver>> pressReceivers = new Dictionary<EVRButtonId, List<GlobalReceiver>>();
+    private Dictionary<EVRButtonId, List<Receiver>> pressReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
     private Dictionary<EVRButtonId, GameObject> touchPairings = new Dictionary<EVRButtonId, GameObject>();
-    private Dictionary<EVRButtonId, List<GlobalReceiver>> touchReceivers = new Dictionary<EVRButtonId, List<GlobalReceiver>>();
+    private Dictionary<EVRButtonId, List<Receiver>> touchReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
     private SteamVR_TrackedObject controller;
     private EventData eventData;
 
@@ -260,6 +260,7 @@ namespace FRL.IO {
     void HandleTestInput() {
       //Translate the mousepad to be the touchpad.
       Vector2 axis = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+      eventData.touchpadAxis = axis;
 
       //Handle "press" keys
       foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToPressIds) {
@@ -339,6 +340,11 @@ namespace FRL.IO {
     private void ExecutePressDown(EVRButtonId id) {
       GameObject go = eventData.currentRaycast;
       if (go == null)
+        return;
+
+      //If there's a receiver component, only cast to it if it's this module.
+      Receiver r = go.GetComponent<Receiver>();
+      if (r.module != null && r.module != this)
         return;
 
       switch (id) {
@@ -496,29 +502,29 @@ namespace FRL.IO {
 
     private void ExecuteGlobalPressDown(EVRButtonId id) {
       //Add paired list.
-      pressReceivers[id] = GlobalReceiver.instances;
+      pressReceivers[id] = Receiver.instances;
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalApplicationMenuPressDownHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalApplicationMenuPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalGripPressDownHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalGripPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTouchpadPressDownHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTouchpadPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTriggerPressDownHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTriggerPressDown(eventData));
@@ -535,25 +541,25 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalApplicationMenuPressHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalApplicationMenuPress(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalGripPressHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalGripPress(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTouchpadPressHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTouchpadPress(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTriggerPressHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTriggerPress(eventData));
@@ -570,25 +576,25 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalApplicationMenuPressUpHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalApplicationMenuPressUp(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalGripPressUpHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalGripPressUp(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTouchpadPressUpHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTouchpadPressUp(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          foreach (GlobalReceiver r in pressReceivers[id])
+          foreach (Receiver r in pressReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTriggerPressUpHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTriggerPressUp(eventData));
@@ -602,17 +608,17 @@ namespace FRL.IO {
     }
 
     private void ExecuteGlobalTouchDown(EVRButtonId id) {
-      touchReceivers[id] = GlobalReceiver.instances;
+      touchReceivers[id] = Receiver.instances;
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          foreach (GlobalReceiver r in touchReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTouchpadTouchDownHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTouchpadTouchDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          foreach (GlobalReceiver r in touchReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTriggerTouchDownHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTriggerTouchDown(eventData));
@@ -629,13 +635,13 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          foreach (GlobalReceiver r in touchReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTouchpadTouchHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTouchpadTouch(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          foreach (GlobalReceiver r in touchReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTriggerTouchHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTriggerTouch(eventData));
@@ -652,13 +658,13 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          foreach (GlobalReceiver r in touchReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTouchpadTouchUpHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTouchpadTouchUp(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          foreach (GlobalReceiver r in touchReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (!r.module || r.module.Equals(this))
               ExecuteEvents.Execute<IGlobalTriggerTouchUpHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalTriggerTouchUp(eventData));
@@ -678,7 +684,7 @@ namespace FRL.IO {
         });
       }
 
-      foreach (GlobalReceiver r in GlobalReceiver.instances) {
+      foreach (Receiver r in Receiver.instances) {
         ExecuteEvents.Execute<IGlobalTriggerClickHandler>(r.gameObject, eventData, (x, y) => {
           x.OnGlobalTriggerClick(eventData);
         });
@@ -714,7 +720,7 @@ namespace FRL.IO {
       /// <summary>
       /// The ViveControllerModule that manages the instance of ViveEventData.
       /// </summary>
-      public ViveControllerModule module {
+      public ViveControllerModule viveControllerModule {
         get; private set;
       }
 
@@ -784,7 +790,7 @@ namespace FRL.IO {
 
       internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject)
         : base(module) {
-        this.module = module;
+        this.viveControllerModule = module;
         this.steamVRTrackedObject = trackedObject;
       }
 
