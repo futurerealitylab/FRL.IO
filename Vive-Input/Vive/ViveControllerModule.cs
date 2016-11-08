@@ -344,7 +344,7 @@ namespace FRL.IO {
 
       //If there's a receiver component, only cast to it if it's this module.
       Receiver r = go.GetComponent<Receiver>();
-      if (r.module != null && r.module != this)
+      if (r != null && r.module != null && r.module != this)
         return;
 
       switch (id) {
