@@ -87,10 +87,12 @@ at a gameObject):
    "down" of the button, the object is the closest legal raycast from
    the controller. After that, the gameObject will receive all following
    events for that context, even if it is no longer the closest legal raycast.
+ - Optionally, you may attach a Receiver component, and that object will only
+   receive from that Receiver's module.
 
 How to use the Vive Global interfaces (receiving input regardless):
 
- - The gameObject must have a GlobalReceiver component.
+ - The gameObject must have a Receiver component.
  - If the Module field is populated with a specific instance of ViveControllerModule,
    the gameObject will only receive input from that module. Otherwise, it will receive
    global input from all controller modules.
