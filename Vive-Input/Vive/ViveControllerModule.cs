@@ -116,6 +116,7 @@ namespace FRL.IO {
     void Process() {
       this.Raycast();
       this.UpdateCurrentObject();
+      hasBeenProcessed = true;
 
       if (testInput) {
         this.RotateGameObjectByArrows();
@@ -125,7 +126,6 @@ namespace FRL.IO {
 
       this.HandleTestInput();
       this.HandleTestRay();
-      hasBeenProcessed = true;
     }
 
     public void HideModel() {
