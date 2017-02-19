@@ -21,32 +21,32 @@ namespace FRL.IO {
       }
     }
 
-    void IGlobalApplicationMenuPressDownHandler.OnGlobalApplicationMenuPressDown(ViveControllerModule.EventData eventData) {
+    void IGlobalApplicationMenuPressDownHandler.OnGlobalApplicationMenuPressDown(BaseEventData eventData) {
       if (button == ButtonType.AppMenu)
         Toggle();
     }
 
-    void IGlobalGripPressDownHandler.OnGlobalGripPressDown(ViveControllerModule.EventData eventData) {
+    void IGlobalGripPressDownHandler.OnGlobalGripPressDown(BaseEventData eventData) {
       if (button == ButtonType.Grip)
         Toggle();
     }
 
-    void IGlobalTouchpadPressDownHandler.OnGlobalTouchpadPressDown(ViveControllerModule.EventData eventData) {
+    void IGlobalTouchpadPressDownHandler.OnGlobalTouchpadPressDown(BaseEventData eventData) {
       if (button == ButtonType.TouchpadPress)
         Toggle();
     }
 
-    void IGlobalTouchpadTouchDownHandler.OnGlobalTouchpadTouchDown(ViveControllerModule.EventData eventData) {
+    void IGlobalTouchpadTouchDownHandler.OnGlobalTouchpadTouchDown(BaseEventData eventData) {
       if (button == ButtonType.TouchpadTouch)
         Toggle();
     }
 
-    void IGlobalTriggerPressDownHandler.OnGlobalTriggerPressDown(ViveControllerModule.EventData eventData) {
+    void IGlobalTriggerPressDownHandler.OnGlobalTriggerPressDown(BaseEventData eventData) {
       if (button == ButtonType.TriggerPress)
         Toggle();
     }
 
-    void IGlobalTriggerTouchDownHandler.OnGlobalTriggerTouchDown(ViveControllerModule.EventData eventData) {
+    void IGlobalTriggerTouchDownHandler.OnGlobalTriggerTouchDown(BaseEventData eventData) {
       if (button == ButtonType.TriggerTouch)
         Toggle();
     }

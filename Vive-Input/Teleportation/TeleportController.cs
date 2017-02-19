@@ -69,9 +69,10 @@ public class TeleportController : MonoBehaviour, IGlobalTriggerClickHandler {
     }
   }
 
-  void IGlobalTriggerClickHandler.OnGlobalTriggerClick(ViveControllerModule.EventData eventData) {
-    if (eventData.currentRaycast != null && eventData.currentRaycast.GetComponent<TeleportLocation>() != null) {
-      Teleport(eventData.worldPosition);
+  void IGlobalTriggerClickHandler.OnGlobalTriggerClick(BaseEventData eventData) {
+    PointerEventData e = (PointerEventData)eventData;
+    if (e.currentRaycast != null && e.currentRaycast.GetComponent<TeleportLocation>() != null) {
+      Teleport(e.worldPosition);
     }
   }
 

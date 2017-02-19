@@ -84,7 +84,7 @@ public class Grabbable : MonoBehaviour, IGlobalTriggerPressSetHandler, IPointerT
         force += delta;
       }
 
-      rbody.AddForceAtPosition(force, grabbingModule.transform.position, ForceMode.Impulse);
+      rbody.AddForce(force, ForceMode.Impulse);
       savedPositions.Clear();
     }
 
@@ -99,14 +99,14 @@ public class Grabbable : MonoBehaviour, IGlobalTriggerPressSetHandler, IPointerT
   /// This function is called when the trigger is initially pressed. Called once per press context.
   /// </summary>
   /// <param name="eventData">The corresponding event data for the module.</param>
-  public void OnGlobalTriggerPressDown(ViveControllerModule.EventData eventData) {
+  public void OnGlobalTriggerPressDown(BaseEventData eventData) {
     //Only "grab" the object if it's within the bounds of the object.
     //If the object has already been grabbed, ignore this event call.
-    if (collider.bounds.Contains(eventData.viveControllerModule.transform.position) && grabbingModule == null && colliderGrab) {
+    if (collider.bounds.Contains(eventData.module.transform.position) && grabbingModule == null && colliderGrab) {
       //Check for a GlobalGrabber if this object should expect one.
-      if (!expectGrabber || (expectGrabber && eventData.viveControllerModule.GetComponent<Grabber>() != null
-        && eventData.viveControllerModule.GetComponent<Grabber>().isActiveAndEnabled)) {
-        Grab(eventData.viveControllerModule);
+      if (!expectGrabber || (expectGrabber && eventData.module.GetComponent<Grabber>() != null
+        && eventData.module.GetComponent<Grabber>().isActiveAndEnabled)) {
+        Grab(eventData.module);
       }
     }
   }
@@ -115,18 +115,18 @@ public class Grabbable : MonoBehaviour, IGlobalTriggerPressSetHandler, IPointerT
   /// This function is called every frame between the initial press and release of the trigger.
   /// </summary>
   /// <param name="eventData">The corresponding event data for the module.</param>
-  public void OnGlobalTriggerPress(ViveControllerModule.EventData eventData) {
+  public void OnGlobalTriggerPress(BaseEventData eventData) {
     //Only accept this call if it's from the module currently grabbing this object.
-    if (grabbingModule == eventData.viveControllerModule) {
+    if (grabbingModule == eventData.module) {
       //Check for a GlobalGrabber if this object should expect one.
       if (!expectGrabber) {
-        Hold(eventData.viveControllerModule);
+        Hold(eventData.module);
       } else if (expectGrabber) {
-        Grabber grabber = eventData.viveControllerModule.GetComponent<Grabber>();
+        Grabber grabber = eventData.module.GetComponent<Grabber>();
         if (grabber != null && grabber.isActiveAndEnabled) {
-          Hold(eventData.viveControllerModule);
+          Hold(eventData.module);
         } else {
-          Release(eventData.viveControllerModule);
+          Release(eventData.module);
         }
       }
     }
@@ -137,46 +137,47 @@ public class Grabbable : MonoBehaviour, IGlobalTriggerPressSetHandler, IPointerT
   /// This function is called when the trigger is released. Called once per press context.
   /// </summary>
   /// <param name="eventData">The corresponding event data for the module.</param>
-  public void OnGlobalTriggerPressUp(ViveControllerModule.EventData eventData) {
+  public void OnGlobalTriggerPressUp(BaseEventData eventData) {
+    
     //If the grabbing module releases it's trigger, unbind it from this object.
-    if (grabbingModule == eventData.viveControllerModule) {
-      Release(eventData.viveControllerModule);
+    if (grabbingModule == eventData.module) {
+      Release(eventData.module);
     }
   }
 
-  void IPointerTriggerPressDownHandler.OnPointerTriggerPressDown(ViveControllerModule.EventData eventData) {
+  void IPointerTriggerPressDownHandler.OnPointerTriggerPressDown(PointerEventData eventData) {
     //Only "grab" the object if it's within the bounds of the object.
     //If the object has already been grabbed, ignore this event call.
     if (grabbingModule == null && pointerGrab) {
       //Check for a GlobalGrabber if this object should expect one.
-      if (!expectGrabber || (expectGrabber && eventData.viveControllerModule.GetComponent<Grabber>() != null
-        && eventData.viveControllerModule.GetComponent<Grabber>().isActiveAndEnabled)) {
-        Grab(eventData.viveControllerModule);
+      if (!expectGrabber || (expectGrabber && eventData.module.GetComponent<Grabber>() != null
+        && eventData.module.GetComponent<Grabber>().isActiveAndEnabled)) {
+        Grab(eventData.module);
       }
     }
   }
 
-  void IPointerTriggerPressHandler.OnPointerTriggerPress(ViveControllerModule.EventData eventData) {
+  void IPointerTriggerPressHandler.OnPointerTriggerPress(PointerEventData eventData) {
     //Only accept this call if it's from the module currently grabbing this object.
-    if (grabbingModule == eventData.viveControllerModule) {
+    if (grabbingModule == eventData.module) {
       //Check for a GlobalGrabber if this object should expect one.
       if (!expectGrabber) {
-        Hold(eventData.viveControllerModule);
+        Hold(eventData.module);
       } else if (expectGrabber) {
-        Grabber grabber = eventData.viveControllerModule.GetComponent<Grabber>();
+        Grabber grabber = eventData.module.GetComponent<Grabber>();
         if (grabber != null && grabber.isActiveAndEnabled) {
-          Hold(eventData.viveControllerModule);
+          Hold(eventData.module);
         } else {
-          Release(eventData.viveControllerModule);
+          Release(eventData.module);
         }
       }
     }
   }
 
-  void IPointerTriggerPressUpHandler.OnPointerTriggerPressUp(ViveControllerModule.EventData eventData) {
+  void IPointerTriggerPressUpHandler.OnPointerTriggerPressUp(PointerEventData eventData) {
     //If the grabbing module releases it's trigger, unbind it from this object.
-    if (grabbingModule == eventData.viveControllerModule) {
-      Release(eventData.viveControllerModule);
+    if (grabbingModule == eventData.module) {
+      Release(eventData.module);
     }
   }
 }

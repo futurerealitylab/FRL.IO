@@ -26,6 +26,9 @@
   Unity's event system.
 	- SteamVR Plugin 1.1.1
 
+1.10 : 2-19-2017
+- Holojam Vive support added. 
+
 
 -------------------------------------------------------------------------------
 
@@ -64,11 +67,13 @@ Also, game programming can now occur on the object, instead of on the controller
 
 3) **Guide**
 
-This support library requires the SteamVR SDK for Unity.
+This support library requires the SteamVR SDK for Unity and Holojam.
 
 All scripts that want to use this library should include:
 
 using FRL.IO;
+
+For Holojam support, please using the Scripting Define Symbol "HOLOJAM".
 
 How to get set up:
  - Drag the [Camera Rig] Prefab library into the scene.
@@ -77,8 +82,11 @@ How to get set up:
 	- [Camera Rig] -> Controller (right)
  - That's it! You're ready to start scripting gameObjects!
 
+How to get set up for Holojam Vive:
+ - Apply HolojamViveControllerModule.cs Component to:
+	- Each ViveControllerReceiver object in the Holojam Master Client.
  
-How to use the Vive Pointer interfaces (when the controller is pointing
+How to use the Pointer interfaces (when the controller is pointing
 at a gameObject):
 
  - The gameObject must have a Collider component for raycasting.
@@ -90,7 +98,7 @@ at a gameObject):
  - Optionally, you may attach a Receiver component, and that object will only
    receive from that Receiver's module.
 
-How to use the Vive Global interfaces (receiving input regardless):
+How to use the Global interfaces (receiving input regardless):
 
  - The gameObject must have a Receiver component.
  - If the Module field is populated with a specific instance of ViveControllerModule,
@@ -225,6 +233,14 @@ IViveHandler:
 ------- IGlobalTriggerTouchUpHandler.OnGlobalTriggerTouchUp()
 ----- IGlobalTriggerClickHandler.OnGlobalTriggerPressUp()
 
+Extra interfaces:
+
+--- IGlobalPressDownHandler:
+----- IGlobalAppMenuPressDownHandler
+----- IGlobalGripPressDownHandler
+----- IGlobalTouchpadPressDownHandler
+----- IGlobalTriggerPressDownHandler
+
 
 -------------------------------------------------------------------------------
 
@@ -234,16 +250,16 @@ IViveHandler:
 Thanks go out to New York University, Ken Perlin's Future Reality Lab, Ken
 Perlin, David Lobser, Wenbo Lan, Fengyuan Zhu, Zhu Wang, Zhenyi He, Connor
 Defanti, Zach Cimafonte, Evan Moore, Aaron Gaudette, Gene Miller, Dan Zhang,
-and Scott Garner.
+Scott Garner, and Michael Gold.s
 
 -------------------------------------------------------------------------------
 
 
-6) **Contact & Copyright**
+6) **Contact & License**
 
 For any questions, please contact me at: herscher@nyu.edu
 
-Copyright (c) 2016 Sebastian Herscher, Future Reality Lab @ NYU
+Copyright (c) 2017 Sebastian Herscher, Future Reality Lab @ NYU
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
