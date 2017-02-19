@@ -22,11 +22,19 @@ public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
     rbody = this.GetComponent<Rigidbody>();
   }
 
+  private void Update() {
+    if (holdingModule) {
+      transform.position = holdingModule.transform.position;
+      transform.rotation = holdingModule.transform.rotation;
+    }
+  }
+
   private void OnDisable() {
     if (holdingModule != null) {
       ToggleHold(holdingModule);
     }
   }
+
 
   private void ToggleHold(BaseInputModule module) {
     if (holdingModule) {
