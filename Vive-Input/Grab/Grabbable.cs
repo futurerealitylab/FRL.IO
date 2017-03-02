@@ -10,7 +10,7 @@ using System;
 public class Grabbable : MonoBehaviour, IGlobalTriggerPressSetHandler, IPointerTriggerPressSetHandler {
 
   /// <summary>
-  /// Expect a GlobalGrabber.cs component on the grabbing controller.
+  /// Expect a Grabber.cs component on the grabbing controller.
   /// </summary>
   public bool expectGrabber = true;
 

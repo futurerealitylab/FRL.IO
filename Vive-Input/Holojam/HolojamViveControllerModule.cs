@@ -117,9 +117,6 @@ namespace FRL.IO {
     }
 
     void Process() {
-      transform.position = controller.TrackedPosition;
-      transform.rotation = controller.TrackedRotation;
-
       this.Raycast();
       this.UpdateCurrentObject();
       hasBeenProcessed = true;

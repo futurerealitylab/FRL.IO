@@ -15,7 +15,11 @@ public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
   private new Collider collider;
   private Rigidbody rbody;
 
-  private BaseInputModule holdingModule;
+  public BaseInputModule holdingModule {
+    get; private set;
+  }
+
+  public Action<bool> OnToggleHold;
 
   private void Awake() {
     collider = this.GetComponent<Collider>();
@@ -24,8 +28,13 @@ public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
 
   private void Update() {
     if (holdingModule) {
-      transform.position = holdingModule.transform.position;
-      transform.rotation = holdingModule.transform.rotation;
+      if (rbody) {
+        rbody.MovePosition(holdingModule.transform.position);
+        rbody.MoveRotation(holdingModule.transform.rotation);
+      } else {
+        transform.position = holdingModule.transform.position;
+        transform.rotation = holdingModule.transform.rotation;
+      }
     }
   }
 
@@ -40,25 +49,29 @@ public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
     if (holdingModule) {
       //Release
       if (rbody) {
-        rbody.isKinematic = false;
+        //rbody.isKinematic = false;
       }
       holdingModule = null;
-      collider.isTrigger = false;
+      //collider.isTrigger = false;
+      if (OnToggleHold != null)
+        OnToggleHold(false);
     } else {
       //Bind
       holdingModule = module;
-      collider.isTrigger = true;
+      //collider.isTrigger = true;
       if (rbody) {
-        rbody.isKinematic = true;
+        //rbody.isKinematic = true;
       }
+      if (OnToggleHold != null)
+        OnToggleHold(true);
     }
   }
 
   private void TryHold(BaseInputModule module, ButtonType b) {
     //Only try to hold object if it's within the bounds of the collider.
     //If the object is already being held, ignore this event call.
-    if (collider.bounds.Contains(module.transform.position) && holdingModule == null
-        && button == b) {
+    if (collider.bounds.Contains(module.transform.position) && button == b
+      && (holdingModule == null || holdingModule == module)) {
       //Check for a Holder if one is expected.
       if (!expectHolder || (expectHolder && module.GetComponent<Holder>() != null
           && module.GetComponent<Holder>().isActiveAndEnabled)) {
