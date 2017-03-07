@@ -12,7 +12,7 @@ public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
   public ButtonType button;
   public bool expectHolder = true;
 
-  private new Collider collider;
+  private Collider collider;
   private Rigidbody rbody;
 
   public BaseInputModule holdingModule {
