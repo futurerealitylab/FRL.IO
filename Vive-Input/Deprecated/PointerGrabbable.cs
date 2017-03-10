@@ -24,7 +24,7 @@
 //  /// This function is called when the trigger is initially pressed. Called once per press context.
 //  /// </summary>
 //  /// <param name="eventData">The corresponding event data for the module.</param>
-//  public void OnPointerTriggerPressDown(ViveControllerModule.EventData eventData) {
+//  public void OnPointerTriggerPressDown(BaseEventData eventData) {
 //    //If the object has already been grabbed, ignore this event call.
 //    if (grabbingModule == null) {
 //      //Bind the module to this object.
@@ -44,7 +44,7 @@
 //  /// This function is called every frame between the initial press and release of the trigger.
 //  /// </summary>
 //  /// <param name="eventData">The corresponding event data for the module.</param>
-//  public void OnPointerTriggerPress(ViveControllerModule.EventData eventData) {
+//  public void OnPointerTriggerPress(BaseEventData eventData) {
 //    //Only accept this call if it's from the module currently grabbing this object.
 //    if (grabbingModule == eventData.module) {
 //      this.transform.position = grabbingModule.transform.position + grabbingModule.transform.rotation * moduleOffset;
@@ -58,7 +58,7 @@
 //  /// This function is called when the trigger is released. Called once per press context.
 //  /// </summary>
 //  /// <param name="eventData">The corresponding event data for the module.</param>
-//  public void OnPointerTriggerPressUp(ViveControllerModule.EventData eventData) {
+//  public void OnPointerTriggerPressUp(BaseEventData eventData) {
 //    //If the grabbing module releases it's trigger, unbind it from this object.
 //    if (grabbingModule == eventData.module) {
 //      hitOffset = Vector3.zero;

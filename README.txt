@@ -125,7 +125,8 @@ How to test without an HTC Vive:
 
 3.5) **EventData**
 
-Every interface function receives a ViveControllerModule.EventData object with it.
+Every interface function receives a BaseEventData object with it.
+This object can currently be cast into a ViveControllerModule.EventData object.
 The ViveControllerModule.EventData object has the following fields:
 
 module : ViveControllerModule

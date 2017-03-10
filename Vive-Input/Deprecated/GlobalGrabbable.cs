@@ -95,7 +95,7 @@
 //  /// This function is called when the trigger is initially pressed. Called once per press context.
 //  /// </summary>
 //  /// <param name="eventData">The corresponding event data for the module.</param>
-//  public void OnGlobalTriggerPressDown(ViveControllerModule.EventData eventData) {
+//  public void OnGlobalTriggerPressDown(BaseEventData eventData) {
 //    //Only "grab" the object if it's within the bounds of the object.
 //    //If the object has already been grabbed, ignore this event call.
 //    if (GetComponent<Collider>().bounds.Contains(eventData.module.transform.position) && grabbingModule == null) {
@@ -111,7 +111,7 @@
 //  /// This function is called every frame between the initial press and release of the trigger.
 //  /// </summary>
 //  /// <param name="eventData">The corresponding event data for the module.</param>
-//  public void OnGlobalTriggerPress(ViveControllerModule.EventData eventData) {
+//  public void OnGlobalTriggerPress(BaseEventData eventData) {
 //    //Only accept this call if it's from the module currently grabbing this object.
 //    if (grabbingModule == eventData.module) {
 //      //Check for a GlobalGrabber if this object should expect one.
@@ -133,7 +133,7 @@
 //  /// This function is called when the trigger is released. Called once per press context.
 //  /// </summary>
 //  /// <param name="eventData">The corresponding event data for the module.</param>
-//  public void OnGlobalTriggerPressUp(ViveControllerModule.EventData eventData) {
+//  public void OnGlobalTriggerPressUp(BaseEventData eventData) {
 //    //If the grabbing module releases it's trigger, unbind it from this object.
 //    if (grabbingModule == eventData.module) {
 //      Release(eventData.module);
