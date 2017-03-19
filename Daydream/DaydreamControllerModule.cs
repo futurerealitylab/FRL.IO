@@ -305,7 +305,7 @@ namespace FRL.IO {
           return false;
       }
     }
-
+#endif
     public class EventData : PointerEventData {
 
       public DaydreamControllerModule daydreamControllerModule {
@@ -340,7 +340,6 @@ namespace FRL.IO {
         appMenuPress = null;
       }
     }
-#endif
   }
 }
 
