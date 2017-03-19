@@ -8,7 +8,6 @@ namespace FRL.IO {
 
     private Dictionary<Button, GameObject> pairings = new Dictionary<Button, GameObject>();
     private Dictionary<Button, List<Receiver>> receivers = new Dictionary<Button, List<Receiver>>();
-    protected new EventData eventData;
 
     private enum Button {
       CLICK,TOUCH,APPBUTTON
@@ -18,8 +17,11 @@ namespace FRL.IO {
       Button.CLICK, Button.TOUCH, Button.APPBUTTON
     };
 
+    private EventData castEventData {
+      get { return (EventData)eventData; }
+    }
 
-    protected void Awake() {
+    protected override void Awake() {
       eventData = new EventData(this);
 
       foreach(Button b in buttonTypes) {
@@ -42,6 +44,7 @@ namespace FRL.IO {
     // Update is called once per frame
     void Update() {
       if (!hasBeenProcessed) {
+        transform.localRotation = GvrController.Orientation;
         Process();
       }
     }
@@ -63,7 +66,7 @@ namespace FRL.IO {
 
 
     void HandleButtons() {
-      eventData.touchpadAxis = GetTouchpadAxis();
+      castEventData.touchpadAxis = GetTouchpadAxis();
 
       foreach(Button button in buttonTypes) {
         if (GetButtonDown(button)) {
@@ -90,18 +93,18 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.CLICK:
-          eventData.touchpadPress = go;
-          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(eventData.touchpadPress, eventData,
+          castEventData.touchpadPress = go;
+          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(castEventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPressDown(eventData));
           break;
         case Button.TOUCH:
-          eventData.touchpadTouch = go;
-          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(eventData.touchpadTouch, eventData,
+          castEventData.touchpadTouch = go;
+          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(castEventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouchDown(eventData));
           break;
         case Button.APPBUTTON:
-          eventData.appMenuPress = go;
-          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(eventData.appMenuPress, eventData,
+          castEventData.appMenuPress = go;
+          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(castEventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPressDown(eventData));
           break;
         default:
@@ -116,15 +119,15 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.CLICK:
-          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(eventData.touchpadPress, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(castEventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPress(eventData));
           break;
         case Button.TOUCH:
-          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(eventData.touchpadTouch, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(castEventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouch(eventData));
           break;
         case Button.APPBUTTON:
-          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(eventData.appMenuPress, eventData,
+          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(castEventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPress(eventData));
           break;
         default:
@@ -137,19 +140,19 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.APPBUTTON:
-          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(eventData.appMenuPress, eventData,
+          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(castEventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPressUp(eventData));
-          eventData.appMenuPress = null;
+          castEventData.appMenuPress = null;
           break;
         case Button.CLICK:
-          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(eventData.touchpadPress, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(castEventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPressUp(eventData));
-          eventData.touchpadPress = null;
+          castEventData.touchpadPress = null;
           break;
         case Button.TOUCH:
-          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(eventData.touchpadTouch, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(castEventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouchUp(eventData));
-          eventData.touchpadTouch = null;
+          castEventData.touchpadTouch = null;
           break;
         default:
           throw new System.Exception("Unknown/Illegal Daydream Button.");
@@ -255,9 +258,12 @@ namespace FRL.IO {
 
       Vector2 axis = GvrController.TouchPos;
 
-      axis = (axis - new Vector2(-0.5f, -0.5f)) * 2f;
+      axis = new Vector2(axis.x, -1f * axis.y);
 
-      return new Vector2(axis.x, -1f * axis.y);
+      axis = (axis - new Vector2(0.5f, -0.5f)) * 2f;
+      //axis = (axis - new Vector2(-0.5f, -0.5f)) * 2f;
+
+      return axis;
     }
 
 

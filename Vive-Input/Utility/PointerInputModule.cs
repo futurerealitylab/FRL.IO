@@ -16,6 +16,10 @@ namespace FRL.IO {
 
     protected new PointerEventData eventData;
 
+    protected virtual void Awake() {
+      eventData = new PointerEventData(this);
+    }
+
     protected override void Process() {
       this.Raycast();
       this.UpdateCurrentObject();
