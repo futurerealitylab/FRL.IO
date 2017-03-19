@@ -34,5 +34,18 @@ namespace FRL.IO {
     public PointerEventData(BaseInputModule module) : base(module) {
 
     }
+
+    internal void SetCurrentRaycast(GameObject go, Vector3 normal, Vector3 position) {
+      this.currentRaycast = go;
+      this.worldNormal = normal;
+      this.worldPosition = position;
+    }
+
+    internal override void Reset() {
+      currentRaycast = null;
+      previousRaycast = null;
+      worldNormal = Vector3.zero;
+      worldPosition = Vector3.zero;
+    }
   }
 }

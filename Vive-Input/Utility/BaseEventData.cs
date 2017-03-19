@@ -9,6 +9,8 @@ namespace FRL.IO {
     public BaseEventData(BaseInputModule module) {
       this.module = module;
     }
+
+    internal virtual void Reset() { }
   }
 }
 

@@ -5,30 +5,17 @@ using Valve.VR;
 using System.Collections;
 
 namespace FRL.IO {
-  public class ViveControllerModule : BaseInputModule {
-
-    [Tooltip("Test input mode. Arrow and letter keys can be used to aim and emulate button actions.")]
-    public bool testInput = false;
-    [Tooltip("Test ray. Basic ray that goes from slightly in front of the gameObject to either the interaction distance, or the ray hit.")]
-    public bool testRay = false;
-
-    [Tooltip("Optional tag for limiting interaction.")]
-    public string interactTag;
-    [Range(0, float.MaxValue)]
-    [Tooltip("Interaction range of the module.")]
-    public float interactDistance = 10f;
+  public class ViveControllerModule : PointerInputModule {
 
     private Dictionary<EVRButtonId, GameObject> pressPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<Receiver>> pressReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
     private Dictionary<EVRButtonId, GameObject> touchPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<Receiver>> touchReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
     private SteamVR_TrackedObject controller;
-    private EventData eventData;
+    protected new EventData eventData;
 
     private List<RaycastHit> hits = new List<RaycastHit>();
     private Ray ray;
-
-    private bool hasBeenProcessed = false;
 
 
     //Steam Controller button and axis ids
@@ -68,9 +55,9 @@ namespace FRL.IO {
     protected void Awake() {
       controller = this.GetComponent<SteamVR_TrackedObject>();
 
-      if (!controller) {
-        testInput = true;
-      }
+      //if (!controller) {
+      //  testInput = true;
+      //}
 
       eventData = new EventData(this, controller);
 
@@ -85,7 +72,8 @@ namespace FRL.IO {
       }
     }
 
-    protected void OnDisable() {
+    protected override void OnDisable() {
+      base.OnDisable();
 
       foreach (EVRButtonId button in pressIds) {
         this.ExecutePressUp(button);
@@ -97,10 +85,7 @@ namespace FRL.IO {
         this.ExecuteGlobalTouchUp(button);
       }
 
-      eventData.currentRaycast = null;
-      this.UpdateCurrentObject();
       eventData.Reset();
-      this.DestroyTestRay();
     }
 
     void Update() {
@@ -113,19 +98,16 @@ namespace FRL.IO {
       hasBeenProcessed = false;
     }
 
-    void Process() {
-      this.Raycast();
-      this.UpdateCurrentObject();
-      hasBeenProcessed = true;
+    protected override void Process() {
+      base.Process();
+      //if (testInput) {
+      //  this.RotateGameObjectByArrows();
+      //} else {
+      this.HandleButtons();
+      //}
 
-      if (testInput) {
-        this.RotateGameObjectByArrows();
-      } else {
-        this.HandleButtons();
-      }
-
-      this.HandleTestInput();
-      this.HandleTestRay();
+      //this.HandleTestInput();
+      //this.HandleTestRay();
     }
 
     public void HideModel() {
@@ -156,143 +138,90 @@ namespace FRL.IO {
     }
 
     public ViveControllerModule.EventData GetEventData() {
-      if (!hasBeenProcessed) {
-        Process();
-      }
+      Update();
       return eventData;
     }
 
-    private void Raycast() {
-      hits.Clear();
+    //void RotateGameObjectByArrows() {
+    //  if (Input.GetKey(KeyCode.LeftArrow)) {
+    //    transform.Rotate(Vector3.down * 90f * Time.deltaTime);
+    //  }
+    //  if (Input.GetKey(KeyCode.RightArrow)) {
+    //    transform.Rotate(Vector3.up * 90f * Time.deltaTime);
+    //  }
+    //  if (Input.GetKey(KeyCode.UpArrow)) {
+    //    transform.Rotate(Vector3.left * 90f * Time.deltaTime);
+    //  }
+    //  if (Input.GetKey(KeyCode.DownArrow)) {
+    //    transform.Rotate(Vector3.right * 90f * Time.deltaTime);
+    //  }
+    //}
 
-      //CAST RAY
-      Vector3 v = transform.position;
-      Quaternion q = transform.rotation;
-      ray = new Ray(v, q * Vector3.forward);
-      hits.AddRange(Physics.RaycastAll(ray, interactDistance));
-      eventData.previousRaycast = eventData.currentRaycast;
+    //void HandleTestRay() {
+    //  //if (testRay && line == null) {
+    //  //  line = this.gameObject.AddComponent<LineRenderer>();
+    //  //  line.material = new Material(Shader.Find("Unlit/Color"));
+    //  //  line.material.color = Color.cyan;
+    //  //  line.SetWidth(0.01f, 0.01f);
+    //  //} else if (!testRay && line != null) {
+    //  //  DestroyTestRay();
+    //  //}
 
-      if (hits.Count == 0) {
-        eventData.SetCurrentRaycast(null, Vector3.zero, Vector3.zero);
-        return;
-      }
+    //  //Handle the line
+    //  if (line != null) {
+    //    Vector3 startPoint = this.transform.position + this.transform.forward * 0.05f + this.transform.up * -0.01f;
 
-      //find the closest object.
-      RaycastHit minHit = hits[0];
-      for (int i = 0; i < hits.Count; i++) {
-        if (hits[i].distance < minHit.distance) {
-          minHit = hits[i];
-        }
-      }
+    //    line.SetVertexCount(2);
+    //    line.SetPosition(0, startPoint);
+    //    if (eventData.currentRaycast != null) {
+    //      line.SetPosition(1, eventData.worldPosition);
+    //    } else {
+    //      line.SetPosition(1, startPoint + this.transform.forward * interactDistance);
+    //    }
+    //  }
+    //}
 
-      //make sure the closest object is able to be interacted with.
-      if (interactTag != null && interactTag.Length > 1
-        && !minHit.transform.tag.Equals(interactTag)) {
-        eventData.SetCurrentRaycast(null, Vector3.zero, Vector3.zero);
-      } else {
-        eventData.SetCurrentRaycast(
-          minHit.transform.gameObject, minHit.normal, minHit.point);
-      }
-    }
+    //void DestroyTestRay() {
+    //  Destroy(line);
+    //  line = null;
+    //}
 
-    void UpdateCurrentObject() {
-      this.HandlePointerExitAndEnter(eventData);
-    }
+    //void HandleTestInput() {
+    //  //Translate the mousepad to be the touchpad.
+    //  Vector2 axis = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+    //  eventData.touchpadAxis = axis;
 
-    void HandlePointerExitAndEnter(EventData eventData) {
-      if (eventData.previousRaycast != eventData.currentRaycast) {
-        ExecuteEvents.Execute<IPointerEnterHandler>(
-          eventData.currentRaycast, eventData, ExecuteEvents.pointerEnterHandler);
-        ExecuteEvents.Execute<IPointerExitHandler>(
-          eventData.previousRaycast, eventData, ExecuteEvents.pointerExitHandler);
-      } else if (eventData.currentRaycast != null) {
-        ExecuteEvents.Execute<IPointerStayHandler>(
-          eventData.currentRaycast, eventData, (x, y) => {
-            x.OnPointerStay(eventData);
-          });
-      }
-    }
+    //  //Handle "press" keys
+    //  foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToPressIds) {
+    //    if (Input.GetKeyDown(kvp.Key)) {
+    //      ExecutePressDown(kvp.Value);
+    //      ExecuteGlobalPressDown(kvp.Value);
+    //      if (kvp.Value == EVRButtonId.k_EButton_SteamVR_Trigger) {
+    //        ExecuteTriggerClick();
+    //      }
+    //    } else if (Input.GetKey(kvp.Key)) {
+    //      ExecutePress(kvp.Value);
+    //      ExecuteGlobalPress(kvp.Value);
+    //    } else if (Input.GetKeyUp(kvp.Key)) {
+    //      ExecutePressUp(kvp.Value);
+    //      ExecutePressUp(kvp.Value);
+    //    }
+    //  }
 
-    void RotateGameObjectByArrows() {
-      if (Input.GetKey(KeyCode.LeftArrow)) {
-        transform.Rotate(Vector3.down * 90f * Time.deltaTime);
-      }
-      if (Input.GetKey(KeyCode.RightArrow)) {
-        transform.Rotate(Vector3.up * 90f * Time.deltaTime);
-      }
-      if (Input.GetKey(KeyCode.UpArrow)) {
-        transform.Rotate(Vector3.left * 90f * Time.deltaTime);
-      }
-      if (Input.GetKey(KeyCode.DownArrow)) {
-        transform.Rotate(Vector3.right * 90f * Time.deltaTime);
-      }
-    }
-
-    void HandleTestRay() {
-      if (testRay && line == null) {
-        line = this.gameObject.AddComponent<LineRenderer>();
-        line.material = new Material(Shader.Find("Unlit/Color"));
-        line.material.color = Color.cyan;
-        line.SetWidth(0.01f, 0.01f);
-      } else if (!testRay && line != null) {
-        DestroyTestRay();
-      }
-
-      //Handle the line
-      if (line != null) {
-        Vector3 startPoint = this.transform.position + this.transform.forward * 0.05f + this.transform.up * -0.01f;
-
-        line.SetVertexCount(2);
-        line.SetPosition(0, startPoint);
-        if (eventData.currentRaycast != null) {
-          line.SetPosition(1, eventData.worldPosition);
-        } else {
-          line.SetPosition(1, startPoint + this.transform.forward * interactDistance);
-        }
-      }
-    }
-
-    void DestroyTestRay() {
-      Destroy(line);
-      line = null;
-    }
-
-    void HandleTestInput() {
-      //Translate the mousepad to be the touchpad.
-      Vector2 axis = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-      eventData.touchpadAxis = axis;
-
-      //Handle "press" keys
-      foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToPressIds) {
-        if (Input.GetKeyDown(kvp.Key)) {
-          ExecutePressDown(kvp.Value);
-          ExecuteGlobalPressDown(kvp.Value);
-          if (kvp.Value == EVRButtonId.k_EButton_SteamVR_Trigger) {
-            ExecuteTriggerClick();
-          }
-        } else if (Input.GetKey(kvp.Key)) {
-          ExecutePress(kvp.Value);
-          ExecuteGlobalPress(kvp.Value);
-        } else if (Input.GetKeyUp(kvp.Key)) {
-          ExecutePressUp(kvp.Value);
-          ExecutePressUp(kvp.Value);
-        }
-      }
-
-      //Handle "touch" keys
-      foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToTouchIds) {
-        if (Input.GetKeyDown(kvp.Key)) {
-          ExecuteTouchDown(kvp.Value);
-          ExecuteGlobalTouchDown(kvp.Value);
-        } else if (Input.GetKey(kvp.Key)) {
-          ExecuteTouch(kvp.Value);
-          ExecuteGlobalTouchDown(kvp.Value);
-        } else if (Input.GetKeyUp(kvp.Key)) {
-          ExecuteTouchUp(kvp.Value);
-          ExecuteGlobalTouchUp(kvp.Value);
-        }
-      }
-    }
+    //  //Handle "touch" keys
+    //  foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToTouchIds) {
+    //    if (Input.GetKeyDown(kvp.Key)) {
+    //      ExecuteTouchDown(kvp.Value);
+    //      ExecuteGlobalTouchDown(kvp.Value);
+    //    } else if (Input.GetKey(kvp.Key)) {
+    //      ExecuteTouch(kvp.Value);
+    //      ExecuteGlobalTouchDown(kvp.Value);
+    //    } else if (Input.GetKeyUp(kvp.Key)) {
+    //      ExecuteTouchUp(kvp.Value);
+    //      ExecuteGlobalTouchUp(kvp.Value);
+    //    }
+    //  }
+    //}
 
     void HandleButtons() {
       int index = (int) controller.index;
@@ -797,13 +726,9 @@ namespace FRL.IO {
       /// <summary>
       /// Reset the event data fields. 
       /// </summary>
-      /// <remarks>
-      /// There is currently a warning because this hides AbstractEventData.Reset. This will be removed when
-      /// we no longer rely on Unity's event system paradigm.
-      /// </remarks>
-      internal void Reset() {
-        currentRaycast = null;
-        previousRaycast = null;
+      internal override void Reset() {
+        base.Reset();
+
         touchpadAxis = Vector2.zero;
         triggerAxis = Vector2.zero;
         appMenuPress = null;
@@ -812,14 +737,6 @@ namespace FRL.IO {
         triggerPress = null;
         touchpadTouch = null;
         triggerTouch = null;
-        worldNormal = Vector3.zero;
-        worldPosition = Vector3.zero;
-      }
-
-      internal void SetCurrentRaycast(GameObject go, Vector3 normal, Vector3 position) {
-        this.currentRaycast = go;
-        this.worldNormal = normal;
-        this.worldPosition = position;
       }
     }
   }
