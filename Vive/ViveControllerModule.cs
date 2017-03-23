@@ -18,10 +18,6 @@ namespace FRL.IO {
       get { return (EventData)eventData; }
     }
 
-    private List<RaycastHit> hits = new List<RaycastHit>();
-    private Ray ray;
-
-
     //Steam Controller button and axis ids
     private EVRButtonId[] pressIds = new EVRButtonId[] {
       EVRButtonId.k_EButton_ApplicationMenu,
