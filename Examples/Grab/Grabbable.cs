@@ -17,7 +17,7 @@ public class Grabbable : MonoBehaviour, IGlobalTriggerPressSetHandler, IPointerT
   public bool pointerGrab = true;
   public bool colliderGrab = true;
   
-  private Collider collider;
+  private new Collider collider;
   private Rigidbody rbody;
 
   private Vector3 offset = Vector3.zero;

@@ -1,26 +1,24 @@
-﻿
+﻿#if HOLOJAM
 using UnityEngine;
 using System.Collections.Generic;
 using Valve.VR;
 using System.Collections;
+using Holojam.Vive;
 
 namespace FRL.IO {
-  public class ViveControllerModule : PointerInputModule {
+  [RequireComponent(typeof(ViveControllerReceiver))]
+  public class HolojamViveControllerModule : PointerInputModule {
 
     private Dictionary<EVRButtonId, GameObject> pressPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<Receiver>> pressReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
     private Dictionary<EVRButtonId, GameObject> touchPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<Receiver>> touchReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
-    private SteamVR_TrackedObject controller;
-    
 
     private EventData castEventData {
       get { return (EventData)eventData; }
     }
 
-    private List<RaycastHit> hits = new List<RaycastHit>();
-    private Ray ray;
-
+    private ViveControllerReceiver controller;
 
     //Steam Controller button and axis ids
     private EVRButtonId[] pressIds = new EVRButtonId[] {
@@ -35,35 +33,11 @@ namespace FRL.IO {
       EVRButtonId.k_EButton_SteamVR_Trigger
     };
 
-    private EVRButtonId[] axisIds = new EVRButtonId[] {
-      EVRButtonId.k_EButton_SteamVR_Touchpad,
-      EVRButtonId.k_EButton_SteamVR_Trigger
-    };
+    protected override void Awake() {
+      base.Awake();
+      controller = this.GetComponent<ViveControllerReceiver>();
 
-
-    private Dictionary<KeyCode, EVRButtonId> keysToPressIds = new Dictionary<KeyCode, EVRButtonId> {
-      {KeyCode.Q,EVRButtonId.k_EButton_ApplicationMenu},
-      {KeyCode.G,EVRButtonId.k_EButton_Grip},
-      {KeyCode.P,EVRButtonId.k_EButton_SteamVR_Touchpad},
-      {KeyCode.T,EVRButtonId.k_EButton_SteamVR_Trigger}
-    };
-
-    private Dictionary<KeyCode, EVRButtonId> keysToTouchIds = new Dictionary<KeyCode, EVRButtonId> {
-      {KeyCode.O,EVRButtonId.k_EButton_SteamVR_Touchpad},
-      {KeyCode.R,EVRButtonId.k_EButton_SteamVR_Trigger}
-    };
-
-
-    private LineRenderer line;
-
-    protected void Awake() {
-      controller = this.GetComponent<SteamVR_TrackedObject>();
-
-      //if (!controller) {
-      //  testInput = true;
-      //}
-
-      eventData = new EventData(this, controller);
+      eventData = new EventData(this);
 
       foreach (EVRButtonId button in pressIds) {
         pressPairings.Add(button, null);
@@ -78,7 +52,6 @@ namespace FRL.IO {
 
     protected override void OnDisable() {
       base.OnDisable();
-
       foreach (EVRButtonId button in pressIds) {
         this.ExecutePressUp(button);
         this.ExecuteGlobalPressUp(button);
@@ -88,7 +61,6 @@ namespace FRL.IO {
         this.ExecuteTouchUp(button);
         this.ExecuteGlobalTouchUp(button);
       }
-
       eventData.Reset();
     }
 
@@ -104,152 +76,35 @@ namespace FRL.IO {
 
     protected override void Process() {
       base.Process();
-      //if (testInput) {
-      //  this.RotateGameObjectByArrows();
-      //} else {
+
+      //Why did I add this? May be breaking something. Can't remember. Commenting out for now.
+      //if (!Holojam.Tools.BuildManager.IsMasterClient())
+      //  return;
+
       this.HandleButtons();
-      //}
-
-      //this.HandleTestInput();
-      //this.HandleTestRay();
     }
 
-    public void HideModel() {
-      SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel>();
-      if (model) {
-        model.gameObject.SetActive(false);
+    public HolojamViveControllerModule.EventData GetEventData() {
+      if (!hasBeenProcessed) {
+        Process();
       }
-    }
-
-    public void ShowModel() {
-      SteamVR_RenderModel model = GetComponentInChildren<SteamVR_RenderModel>();
-      if (model) {
-        model.gameObject.SetActive(true);
-      }
-    }
-
-    IEnumerator Pulse(float duration, ushort strength) {
-      float startTime = Time.realtimeSinceStartup;
-      while (Time.realtimeSinceStartup - startTime < duration) {
-        SteamVR_Controller.Input((int) controller.index).TriggerHapticPulse(strength);
-        yield return null;
-      }
-    }
-
-    // Duration in seconds, strength is a value from 0 to 3999.
-    public void TriggerHapticPulse(float duration, ushort strength) {
-      StartCoroutine(Pulse(duration, strength));
-    }
-
-    public ViveControllerModule.EventData GetEventData() {
-      Update();
       return castEventData;
     }
 
-    //void RotateGameObjectByArrows() {
-    //  if (Input.GetKey(KeyCode.LeftArrow)) {
-    //    transform.Rotate(Vector3.down * 90f * Time.deltaTime);
-    //  }
-    //  if (Input.GetKey(KeyCode.RightArrow)) {
-    //    transform.Rotate(Vector3.up * 90f * Time.deltaTime);
-    //  }
-    //  if (Input.GetKey(KeyCode.UpArrow)) {
-    //    transform.Rotate(Vector3.left * 90f * Time.deltaTime);
-    //  }
-    //  if (Input.GetKey(KeyCode.DownArrow)) {
-    //    transform.Rotate(Vector3.right * 90f * Time.deltaTime);
-    //  }
-    //}
-
-    //void HandleTestRay() {
-    //  //if (testRay && line == null) {
-    //  //  line = this.gameObject.AddComponent<LineRenderer>();
-    //  //  line.material = new Material(Shader.Find("Unlit/Color"));
-    //  //  line.material.color = Color.cyan;
-    //  //  line.SetWidth(0.01f, 0.01f);
-    //  //} else if (!testRay && line != null) {
-    //  //  DestroyTestRay();
-    //  //}
-
-    //  //Handle the line
-    //  if (line != null) {
-    //    Vector3 startPoint = this.transform.position + this.transform.forward * 0.05f + this.transform.up * -0.01f;
-
-    //    line.SetVertexCount(2);
-    //    line.SetPosition(0, startPoint);
-    //    if (eventData.currentRaycast != null) {
-    //      line.SetPosition(1, eventData.worldPosition);
-    //    } else {
-    //      line.SetPosition(1, startPoint + this.transform.forward * interactDistance);
-    //    }
-    //  }
-    //}
-
-    //void DestroyTestRay() {
-    //  Destroy(line);
-    //  line = null;
-    //}
-
-    //void HandleTestInput() {
-    //  //Translate the mousepad to be the touchpad.
-    //  Vector2 axis = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-    //  eventData.touchpadAxis = axis;
-
-    //  //Handle "press" keys
-    //  foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToPressIds) {
-    //    if (Input.GetKeyDown(kvp.Key)) {
-    //      ExecutePressDown(kvp.Value);
-    //      ExecuteGlobalPressDown(kvp.Value);
-    //      if (kvp.Value == EVRButtonId.k_EButton_SteamVR_Trigger) {
-    //        ExecuteTriggerClick();
-    //      }
-    //    } else if (Input.GetKey(kvp.Key)) {
-    //      ExecutePress(kvp.Value);
-    //      ExecuteGlobalPress(kvp.Value);
-    //    } else if (Input.GetKeyUp(kvp.Key)) {
-    //      ExecutePressUp(kvp.Value);
-    //      ExecutePressUp(kvp.Value);
-    //    }
-    //  }
-
-    //  //Handle "touch" keys
-    //  foreach (KeyValuePair<KeyCode, EVRButtonId> kvp in keysToTouchIds) {
-    //    if (Input.GetKeyDown(kvp.Key)) {
-    //      ExecuteTouchDown(kvp.Value);
-    //      ExecuteGlobalTouchDown(kvp.Value);
-    //    } else if (Input.GetKey(kvp.Key)) {
-    //      ExecuteTouch(kvp.Value);
-    //      ExecuteGlobalTouchDown(kvp.Value);
-    //    } else if (Input.GetKeyUp(kvp.Key)) {
-    //      ExecuteTouchUp(kvp.Value);
-    //      ExecuteGlobalTouchUp(kvp.Value);
-    //    }
-    //  }
-    //}
-
     void HandleButtons() {
-      int index = (int) controller.index;
 
-      float previousX = castEventData.triggerAxis.x;
-
-      castEventData.touchpadAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[0]);
-      castEventData.triggerAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[1]);
-
-      //Click
-      if (previousX != 1.0f && castEventData.triggerAxis.x == 1f) {
-        ExecuteTriggerClick();
-      }
-
+      castEventData.touchpadAxis = controller.TouchpadAxis;
+      castEventData.triggerAxis = controller.TriggerAxis;
 
       //Press
       foreach (EVRButtonId button in pressIds) {
-        if (GetPressDown(index, button)) {
+        if (GetPressDown(button)) {
           ExecutePressDown(button);
           ExecuteGlobalPressDown(button);
-        } else if (GetPress(index, button)) {
+        } else if (GetPress(button)) {
           ExecutePress(button);
           ExecuteGlobalPress(button);
-        } else if (GetPressUp(index, button)) {
+        } else if (GetPressUp(button)) {
           ExecutePressUp(button);
           ExecuteGlobalPressUp(button);
         }
@@ -257,13 +112,13 @@ namespace FRL.IO {
 
       //Touch
       foreach (EVRButtonId button in touchIds) {
-        if (GetTouchDown(index, button)) {
+        if (GetTouchDown(button)) {
           ExecuteTouchDown(button);
           ExecuteGlobalTouchDown(button);
-        } else if (GetTouch(index, button)) {
+        } else if (GetTouch(button)) {
           ExecuteTouch(button);
           ExecuteGlobalTouch(button);
-        } else if (GetTouchUp(index, button)) {
+        } else if (GetTouchUp(button)) {
           ExecuteTouchUp(button);
           ExecuteGlobalTouchUp(button);
         }
@@ -624,28 +479,32 @@ namespace FRL.IO {
       }
     }
 
-    private bool GetPressDown(int index, EVRButtonId button) {
-      return SteamVR_Controller.Input(index).GetPressDown(button);
+    private bool GetPressDown(EVRButtonId button) {
+      return controller.GetPressDown(button);
     }
 
-    private bool GetPress(int index, EVRButtonId button) {
-      return SteamVR_Controller.Input(index).GetPress(button);
+    private bool GetPress(EVRButtonId button) {
+      return controller.GetPress(button);
     }
 
-    private bool GetPressUp(int index, EVRButtonId button) {
-      return SteamVR_Controller.Input(index).GetPressUp(button);
+    private bool GetPressUp(EVRButtonId button) {
+      return controller.GetPressUp(button);
     }
 
-    private bool GetTouchDown(int index, EVRButtonId button) {
-      return SteamVR_Controller.Input(index).GetTouchDown(button);
+    private bool GetTouchDown(EVRButtonId button) {
+      return controller.GetTouchDown(button);
     }
 
-    private bool GetTouch(int index, EVRButtonId button) {
-      return SteamVR_Controller.Input(index).GetTouch(button);
+    private bool GetTouch(EVRButtonId button) {
+      return controller.GetTouch(button);
     }
 
-    private bool GetTouchUp(int index, EVRButtonId button) {
-      return SteamVR_Controller.Input(index).GetTouchUp(button);
+    private bool GetTouchUp(EVRButtonId button) {
+      return controller.GetTouchUp(button);
+    }
+
+    private bool GetClick(EVRButtonId button) {
+      return controller.GetClick(button);
     }
 
     public class EventData : PointerEventData {
@@ -653,17 +512,9 @@ namespace FRL.IO {
       /// <summary>
       /// The ViveControllerModule that manages the instance of ViveEventData.
       /// </summary>
-      public ViveControllerModule viveControllerModule {
+      public HolojamViveControllerModule viveControllerModule {
         get; private set;
       }
-
-      /// <summary>
-      /// The SteamVR Tracked Object connected to the module.
-      /// </summary>
-      public SteamVR_TrackedObject steamVRTrackedObject {
-        get; private set;
-      }
-
 
       /// <summary>
       /// The current touchpad axis values of the controller connected to the module.
@@ -721,18 +572,22 @@ namespace FRL.IO {
         get; internal set;
       }
 
-      internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject)
+      internal EventData(HolojamViveControllerModule module)
         : base(module) {
         this.viveControllerModule = module;
-        this.steamVRTrackedObject = trackedObject;
       }
 
       /// <summary>
       /// Reset the event data fields. 
       /// </summary>
+      /// <remarks>
+      /// There is currently a warning because this hides AbstractEventData.Reset. This will be removed when
+      /// we no longer rely on Unity's event system paradigm.
+      /// </remarks>
       internal override void Reset() {
         base.Reset();
-
+        currentRaycast = null;
+        previousRaycast = null;
         touchpadAxis = Vector2.zero;
         triggerAxis = Vector2.zero;
         appMenuPress = null;
@@ -741,7 +596,10 @@ namespace FRL.IO {
         triggerPress = null;
         touchpadTouch = null;
         triggerTouch = null;
+        worldNormal = Vector3.zero;
+        worldPosition = Vector3.zero;
       }
     }
   }
 }
+#endif

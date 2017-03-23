@@ -106,20 +106,6 @@ How to use the Global interfaces (receiving input regardless):
    global input from all controller modules.
  - Use any set of sub interfaces of the IGlobalViveHandler interface.
 
-How to test without an HTC Vive:
-
- - Attach a ViveControllerModule.cs to any gameObject (preferably the Camera).
- - Select the checkbox "TestInput".
- - The arrow keys will rotate the object around the x/y axes.
- - The following letter keys will emulate corresponding button calls:
-
-	- Q: AppMenu press
-	- G: Grip press
-	- P: Touchpad press
-	- T: Trigger press
-	- O: Touchpad touch
-	- R: Trigger touch
-
 -------------------------------------------------------------------------------
 
 
