@@ -80,19 +80,19 @@ public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
     }
   }
 
-  public void OnGlobalApplicationMenuPressDown(BaseEventData eventData) {
+  public void OnGlobalApplicationMenuPressDown(VREventData eventData) {
     TryHold(eventData.module, ButtonType.AppMenu);
   }
 
-  public void OnGlobalGripPressDown(BaseEventData eventData) {
+  public void OnGlobalGripPressDown(VREventData eventData) {
     TryHold(eventData.module, ButtonType.Grip);
   }
 
-  public void OnGlobalTouchpadPressDown(BaseEventData eventData) {
+  public void OnGlobalTouchpadPressDown(VREventData eventData) {
     TryHold(eventData.module, ButtonType.TouchpadPress);
   }
 
-  public void OnGlobalTriggerPressDown(BaseEventData eventData) {
+  public void OnGlobalTriggerPressDown(VREventData eventData) {
     TryHold(eventData.module, ButtonType.TriggerPress);
   }
 }

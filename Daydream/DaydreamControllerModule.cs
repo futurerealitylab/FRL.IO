@@ -17,9 +17,7 @@ namespace FRL.IO {
       Button.CLICK, Button.TOUCH, Button.APPBUTTON
     };
 
-    private EventData castEventData {
-      get { return (EventData)eventData; }
-    }
+    private new EventData eventData;
 
     protected override void Awake() {
       eventData = new EventData(this);
@@ -66,7 +64,7 @@ namespace FRL.IO {
 
 
     void HandleButtons() {
-      castEventData.touchpadAxis = GetTouchpadAxis();
+      eventData.touchpadAxis = GetTouchpadAxis();
 
       foreach(Button button in buttonTypes) {
         if (GetButtonDown(button)) {
@@ -93,18 +91,18 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.CLICK:
-          castEventData.touchpadPress = go;
-          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(castEventData.touchpadPress, eventData,
+          eventData.touchpadPress = go;
+          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(eventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPressDown(eventData));
           break;
         case Button.TOUCH:
-          castEventData.touchpadTouch = go;
-          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(castEventData.touchpadTouch, eventData,
+          eventData.touchpadTouch = go;
+          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(eventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouchDown(eventData));
           break;
         case Button.APPBUTTON:
-          castEventData.appMenuPress = go;
-          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(castEventData.appMenuPress, eventData,
+          eventData.appMenuPress = go;
+          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(eventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPressDown(eventData));
           break;
         default:
@@ -119,15 +117,15 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.CLICK:
-          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(castEventData.touchpadPress, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(eventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPress(eventData));
           break;
         case Button.TOUCH:
-          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(castEventData.touchpadTouch, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(eventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouch(eventData));
           break;
         case Button.APPBUTTON:
-          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(castEventData.appMenuPress, eventData,
+          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(eventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPress(eventData));
           break;
         default:
@@ -140,19 +138,19 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.APPBUTTON:
-          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(castEventData.appMenuPress, eventData,
+          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(eventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPressUp(eventData));
-          castEventData.appMenuPress = null;
+          eventData.appMenuPress = null;
           break;
         case Button.CLICK:
-          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(castEventData.touchpadPress, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(eventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPressUp(eventData));
-          castEventData.touchpadPress = null;
+          eventData.touchpadPress = null;
           break;
         case Button.TOUCH:
-          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(castEventData.touchpadTouch, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(eventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouchUp(eventData));
-          castEventData.touchpadTouch = null;
+          eventData.touchpadTouch = null;
           break;
         default:
           throw new System.Exception("Unknown/Illegal Daydream Button.");
@@ -306,25 +304,9 @@ namespace FRL.IO {
       }
     }
 #endif
-    public class EventData : PointerEventData {
+    public class EventData : VREventData {
 
       public DaydreamControllerModule daydreamControllerModule {
-        get; internal set;
-      }
-
-      public Vector2 touchpadAxis {
-        get; internal set;
-      }
-
-      public GameObject touchpadTouch {
-        get; internal set;
-      }
-
-      public GameObject touchpadPress {
-        get; internal set;
-      }
-
-      public GameObject appMenuPress {
         get; internal set;
       }
 
@@ -334,10 +316,6 @@ namespace FRL.IO {
 
       internal override void Reset() {
         base.Reset();
-        touchpadAxis = Vector2.zero;
-        touchpadTouch = null;
-        touchpadPress = null;
-        appMenuPress = null;
       }
     }
   }

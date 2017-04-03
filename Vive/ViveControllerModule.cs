@@ -12,11 +12,8 @@ namespace FRL.IO {
     private Dictionary<EVRButtonId, GameObject> touchPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<Receiver>> touchReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
     private SteamVR_TrackedObject controller;
-    
 
-    private EventData castEventData {
-      get { return (EventData)eventData; }
-    }
+    private new EventData eventData;
 
     //Steam Controller button and axis ids
     private EVRButtonId[] pressIds = new EVRButtonId[] {
@@ -113,19 +110,19 @@ namespace FRL.IO {
 
     public ViveControllerModule.EventData GetEventData() {
       Update();
-      return castEventData;
+      return eventData;
     }
 
     void HandleButtons() {
       int index = (int) controller.index;
 
-      float previousX = castEventData.triggerAxis.x;
+      float previousX = eventData.triggerAxis.x;
 
-      castEventData.touchpadAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[0]);
-      castEventData.triggerAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[1]);
+      eventData.touchpadAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[0]);
+      eventData.triggerAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[1]);
 
       //Click
-      if (previousX != 1.0f && castEventData.triggerAxis.x == 1f) {
+      if (previousX != 1.0f && eventData.triggerAxis.x == 1f) {
         ExecuteTriggerClick();
       }
 
@@ -171,23 +168,23 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          castEventData.appMenuPress = go;
-          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(castEventData.appMenuPress, eventData,
+          eventData.appMenuPress = go;
+          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(eventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
-          castEventData.gripPress = go;
-          ExecuteEvents.Execute<IPointerGripPressDownHandler>(castEventData.gripPress, eventData,
+          eventData.gripPress = go;
+          ExecuteEvents.Execute<IPointerGripPressDownHandler>(eventData.gripPress, eventData,
             (x, y) => x.OnPointerGripPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          castEventData.touchpadPress = go;
-          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(castEventData.touchpadPress, eventData,
+          eventData.touchpadPress = go;
+          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(eventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          castEventData.triggerPress = go;
-          ExecuteEvents.Execute<IPointerTriggerPressDownHandler>(castEventData.triggerPress, eventData,
+          eventData.triggerPress = go;
+          ExecuteEvents.Execute<IPointerTriggerPressDownHandler>(eventData.triggerPress, eventData,
             (x, y) => x.OnPointerTriggerPressDown(eventData));
           break;
         default:
@@ -204,19 +201,19 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(castEventData.appMenuPress, eventData,
+          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(eventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPress(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
-          ExecuteEvents.Execute<IPointerGripPressHandler>(castEventData.gripPress, eventData,
+          ExecuteEvents.Execute<IPointerGripPressHandler>(eventData.gripPress, eventData,
             (x, y) => x.OnPointerGripPress(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(castEventData.touchpadPress, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(eventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPress(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<IPointerTriggerPressHandler>(castEventData.triggerPress, eventData,
+          ExecuteEvents.Execute<IPointerTriggerPressHandler>(eventData.triggerPress, eventData,
             (x, y) => x.OnPointerTriggerPress(eventData));
           break;
         default:
@@ -230,24 +227,24 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_ApplicationMenu:
-          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(castEventData.appMenuPress, eventData,
+          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(eventData.appMenuPress, eventData,
             (x, y) => x.OnPointerAppMenuPressUp(eventData));
-          castEventData.appMenuPress = null;
+          eventData.appMenuPress = null;
           break;
         case EVRButtonId.k_EButton_Grip:
-          ExecuteEvents.Execute<IPointerGripPressUpHandler>(castEventData.gripPress, eventData,
+          ExecuteEvents.Execute<IPointerGripPressUpHandler>(eventData.gripPress, eventData,
             (x, y) => x.OnPointerGripPressUp(eventData));
-          castEventData.gripPress = null;
+          eventData.gripPress = null;
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(castEventData.touchpadPress, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(eventData.touchpadPress, eventData,
             (x, y) => x.OnPointerTouchpadPressUp(eventData));
-          castEventData.touchpadPress = null;
+          eventData.touchpadPress = null;
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<IPointerTriggerPressUpHandler>(castEventData.triggerPress, eventData,
+          ExecuteEvents.Execute<IPointerTriggerPressUpHandler>(eventData.triggerPress, eventData,
             (x, y) => x.OnPointerTriggerPressUp(eventData));
-          castEventData.triggerPress = null;
+          eventData.triggerPress = null;
           break;
         default:
           throw new System.Exception("Unknown/Illegal EVRButtonId.");
@@ -264,13 +261,13 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          castEventData.touchpadTouch = go;
-          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(castEventData.touchpadTouch, eventData,
+          eventData.touchpadTouch = go;
+          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(eventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouchDown(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          castEventData.triggerTouch = go;
-          ExecuteEvents.Execute<IPointerTriggerTouchDownHandler>(castEventData.triggerTouch, eventData,
+          eventData.triggerTouch = go;
+          ExecuteEvents.Execute<IPointerTriggerTouchDownHandler>(eventData.triggerTouch, eventData,
             (x, y) => x.OnPointerTriggerTouchDown(eventData));
           break;
         default:
@@ -287,11 +284,11 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(castEventData.touchpadTouch, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(eventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouch(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<IPointerTriggerTouchHandler>(castEventData.triggerTouch, eventData,
+          ExecuteEvents.Execute<IPointerTriggerTouchHandler>(eventData.triggerTouch, eventData,
             (x, y) => x.OnPointerTriggerTouch(eventData));
           break;
         default:
@@ -305,14 +302,14 @@ namespace FRL.IO {
 
       switch (id) {
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
-          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(castEventData.touchpadTouch, eventData,
+          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(eventData.touchpadTouch, eventData,
             (x, y) => x.OnPointerTouchpadTouchUp(eventData));
-          castEventData.touchpadTouch = null;
+          eventData.touchpadTouch = null;
           break;
         case EVRButtonId.k_EButton_SteamVR_Trigger:
-          ExecuteEvents.Execute<IPointerTriggerTouchUpHandler>(castEventData.triggerTouch, eventData,
+          ExecuteEvents.Execute<IPointerTriggerTouchUpHandler>(eventData.triggerTouch, eventData,
             (x, y) => x.OnPointerTriggerTouchUp(eventData));
-          castEventData.triggerTouch = null;
+          eventData.triggerTouch = null;
           break;
         default:
           throw new System.Exception("Unknown/Illegal EVRButtonId.");
@@ -537,7 +534,7 @@ namespace FRL.IO {
       return SteamVR_Controller.Input(index).GetTouchUp(button);
     }
 
-    public class EventData : PointerEventData {
+    public class EventData : VREventData {
 
       /// <summary>
       /// The ViveControllerModule that manages the instance of ViveEventData.
@@ -553,63 +550,6 @@ namespace FRL.IO {
         get; private set;
       }
 
-
-      /// <summary>
-      /// The current touchpad axis values of the controller connected to the module.
-      /// </summary>
-      public Vector2 touchpadAxis {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The current trigger axis value of the controller connected to the module.
-      /// </summary>
-      public Vector2 triggerAxis {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The GameObject bound to the current press context of the Application Menu button.
-      /// </summary>
-      public GameObject appMenuPress {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The GameObject bound to the current press context of the Grip button.
-      /// </summary>
-      public GameObject gripPress {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The GameObject bound to the current press context of the Touchpad button.
-      /// </summary>
-      public GameObject touchpadPress {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The GameObject bound to the current press context of the Trigger button.
-      /// </summary>
-      public GameObject triggerPress {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The GameObject bound to the current touch context of the Touchpad button.
-      /// </summary>
-      public GameObject touchpadTouch {
-        get; internal set;
-      }
-
-      /// <summary>
-      /// The GameObject bound to the current touch context of the Trigger button.
-      /// </summary>
-      public GameObject triggerTouch {
-        get; internal set;
-      }
-
       internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject)
         : base(module) {
         this.viveControllerModule = module;
@@ -621,15 +561,6 @@ namespace FRL.IO {
       /// </summary>
       internal override void Reset() {
         base.Reset();
-
-        touchpadAxis = Vector2.zero;
-        triggerAxis = Vector2.zero;
-        appMenuPress = null;
-        gripPress = null;
-        touchpadPress = null;
-        triggerPress = null;
-        touchpadTouch = null;
-        triggerTouch = null;
       }
     }
   }

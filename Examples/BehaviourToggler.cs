@@ -21,32 +21,32 @@ namespace FRL.IO {
       }
     }
 
-    void IGlobalApplicationMenuPressDownHandler.OnGlobalApplicationMenuPressDown(BaseEventData eventData) {
+    void IGlobalApplicationMenuPressDownHandler.OnGlobalApplicationMenuPressDown(VREventData eventData) {
       if (button == ButtonType.AppMenu)
         Toggle();
     }
 
-    void IGlobalGripPressDownHandler.OnGlobalGripPressDown(BaseEventData eventData) {
+    void IGlobalGripPressDownHandler.OnGlobalGripPressDown(VREventData eventData) {
       if (button == ButtonType.Grip)
         Toggle();
     }
 
-    void IGlobalTouchpadPressDownHandler.OnGlobalTouchpadPressDown(BaseEventData eventData) {
+    void IGlobalTouchpadPressDownHandler.OnGlobalTouchpadPressDown(VREventData eventData) {
       if (button == ButtonType.TouchpadPress)
         Toggle();
     }
 
-    void IGlobalTouchpadTouchDownHandler.OnGlobalTouchpadTouchDown(BaseEventData eventData) {
+    void IGlobalTouchpadTouchDownHandler.OnGlobalTouchpadTouchDown(VREventData eventData) {
       if (button == ButtonType.TouchpadTouch)
         Toggle();
     }
 
-    void IGlobalTriggerPressDownHandler.OnGlobalTriggerPressDown(BaseEventData eventData) {
+    void IGlobalTriggerPressDownHandler.OnGlobalTriggerPressDown(VREventData eventData) {
       if (button == ButtonType.TriggerPress)
         Toggle();
     }
 
-    void IGlobalTriggerTouchDownHandler.OnGlobalTriggerTouchDown(BaseEventData eventData) {
+    void IGlobalTriggerTouchDownHandler.OnGlobalTriggerTouchDown(VREventData eventData) {
       if (button == ButtonType.TriggerTouch)
         Toggle();
     }
