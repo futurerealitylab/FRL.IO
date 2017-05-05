@@ -53,7 +53,7 @@ public class TeleportController : MonoBehaviour, IGlobalTriggerClickHandler {
 
     if (line) {
       line.gameObject.SetActive(true);
-      line.numPositions = 2;
+      line.positionCount = 2;
       line.SetPosition(0, eventData.module.transform.position);
       line.SetPosition(1, eventData.worldPosition);
       line.startColor = color;

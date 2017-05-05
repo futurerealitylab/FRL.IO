@@ -89,6 +89,10 @@ namespace FRL.IO {
       return eventData;
     }
 
+    public int GetReceiverIndex() {
+      return controller.index;
+    }
+
     void HandleButtons() {
 
       eventData.touchpadAxis = controller.TouchpadAxis;
