@@ -22,6 +22,10 @@ namespace FRL.IO {
     /// </summary>
     public BaseInputModule module;
 
+    public bool bindToModule;
+    public Vector3 positionOffset;
+    public Vector3 rotationOffset;
+
     private static List<Receiver> instanceCache = new List<Receiver>();
     private static System.Object instanceLock = new System.Object();
 
@@ -33,6 +37,12 @@ namespace FRL.IO {
       }
     }
 
+    private void Update() {
+      if (bindToModule && module) {
+        transform.rotation = module.transform.rotation * Quaternion.Euler(rotationOffset);
+        transform.position = module.transform.position + transform.rotation * positionOffset;
+      }
+    }
     /// <summary>
     /// Gets the current instances of GlobalReceiver.
     /// </summary>
