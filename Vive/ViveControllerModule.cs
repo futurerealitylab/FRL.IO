@@ -117,6 +117,23 @@ namespace FRL.IO {
       return eventData;
     }
 
+    public Vector2 GetTriggerAxis() {
+      try {
+        return SteamVR_Controller.Input((int)controller.index).GetAxis(axisIds[1]);
+      } catch (System.Exception e) {
+        return Vector2.zero;
+      }
+
+    }
+
+    public Vector2 GetTouchpadAxis() {
+      try {
+        return SteamVR_Controller.Input((int)controller.index).GetAxis(axisIds[0]);
+      } catch (System.Exception e) {
+        return Vector2.zero;
+      }
+    }
+
     void HandleButtons() {
       int index = (int)controller.index;
 
