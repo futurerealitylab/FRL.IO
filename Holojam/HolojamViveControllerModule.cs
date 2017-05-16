@@ -89,6 +89,14 @@ namespace FRL.IO {
       return eventData;
     }
 
+    public Vector2 GetTriggerAxis() {
+      return controller.TriggerAxis;
+    }
+
+    public Vector2 GetTouchpadAxis() {
+      return controller.TouchpadAxis;
+    }
+
     public int GetReceiverIndex() {
       return controller.index;
     }

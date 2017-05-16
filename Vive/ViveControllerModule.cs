@@ -109,7 +109,12 @@ namespace FRL.IO {
     }
 
     public void TriggerHapticPulse(ushort strength) {
-      SteamVR_Controller.Input((int)controller.index).TriggerHapticPulse(strength);
+      try {
+        SteamVR_Controller.Input((int)controller.index).TriggerHapticPulse(strength);
+      } catch (System.Exception e) {
+        Debug.LogWarning("Attempted trigger haptic pulse on null controller.");
+      }
+
     }
 
     public ViveControllerModule.EventData GetEventData() {
@@ -123,7 +128,6 @@ namespace FRL.IO {
       } catch (System.Exception e) {
         return Vector2.zero;
       }
-
     }
 
     public Vector2 GetTouchpadAxis() {
