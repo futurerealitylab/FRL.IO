@@ -14,10 +14,10 @@ namespace FRL.IO {
     private List<RaycastHit> hits = new List<RaycastHit>();
     private Ray ray;
 
-    protected new PointerEventData eventData;
+    protected new VREventData eventData;
 
     protected virtual void Awake() {
-      eventData = new PointerEventData(this);
+      eventData = new VREventData(this);
     }
 
     protected override void Process() {
