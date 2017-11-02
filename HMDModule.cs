@@ -5,7 +5,6 @@ using UnityEngine;
 namespace FRL.IO {
   public class HMDModule : PointerInputModule {
 
-    
   }
 }
 

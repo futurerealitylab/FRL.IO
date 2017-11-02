@@ -93,7 +93,9 @@ namespace FRL.IO {
   }
 
   //GRIP HANDLER
-  public interface IPointerGripHandler : IPointerGripPressDownHandler, IPointerGripPressHandler, IPointerGripPressUpHandler { }
+  public interface IPointerGripHandler : IPointerGripPressSetHandler, IPointerGripTouchSetHandler, IPointerGripClickHandler { }
+  public interface IPointerGripPressSetHandler : IPointerGripPressDownHandler, IPointerGripPressHandler, IPointerGripPressUpHandler { }
+  public interface IPointerGripTouchSetHandler : IPointerGripTouchDownHandler, IPointerGripTouchHandler, IPointerGripTouchUpHandler { }
 
   public interface IPointerGripPressDownHandler : IEventSystemHandler {
     void OnPointerGripPressDown(VREventData eventData);
@@ -104,6 +106,21 @@ namespace FRL.IO {
   }
   public interface IPointerGripPressUpHandler : IEventSystemHandler {
     void OnPointerGripPressUp(VREventData eventData);
+  }
+
+  public interface IPointerGripTouchDownHandler : IEventSystemHandler {
+    void OnPointerGripTouchDown(VREventData eventData);
+  }
+
+  public interface IPointerGripTouchHandler : IEventSystemHandler {
+    void OnPointerGripTouch(VREventData eventData);
+  }
+  public interface IPointerGripTouchUpHandler : IEventSystemHandler {
+    void OnPointerGripTouchUp(VREventData eventData);
+  }
+
+  public interface IPointerGripClickHandler : IEventSystemHandler {
+    void OnPointerGripClick(VREventData eventData);
   }
 
   //TOUCHPAD HANDLER
@@ -174,7 +191,9 @@ namespace FRL.IO {
   /// </summary>
 
   /// GLOBAL GRIP HANDLER
-  public interface IGlobalGripHandler : IGlobalGripPressDownHandler, IGlobalGripPressHandler, IGlobalGripPressUpHandler { }
+  public interface IGlobalGripHandler : IGlobalGripPressSetHandler, IGlobalGripTouchSetHandler, IGlobalGripClickHandler { }
+  public interface IGlobalGripPressSetHandler : IGlobalGripPressDownHandler, IGlobalGripPressHandler, IGlobalGripPressUpHandler { }
+  public interface IGlobalGripTouchSetHandler : IGlobalGripTouchDownHandler, IGlobalGripTouchHandler, IGlobalGripTouchUpHandler { }
 
   public interface IGlobalGripPressDownHandler : IEventSystemHandler {
     void OnGlobalGripPressDown(VREventData eventData);
@@ -186,6 +205,22 @@ namespace FRL.IO {
 
   public interface IGlobalGripPressUpHandler : IEventSystemHandler {
     void OnGlobalGripPressUp(VREventData eventData);
+  }
+
+  public interface IGlobalGripTouchDownHandler : IEventSystemHandler {
+    void OnGlobalGripTouchDown(VREventData eventData);
+  }
+
+  public interface IGlobalGripTouchHandler : IEventSystemHandler {
+    void OnGlobalGripTouch(VREventData eventData);
+  }
+
+  public interface IGlobalGripTouchUpHandler : IEventSystemHandler {
+    void OnGlobalGripTouchUp(VREventData eventData);
+  }
+
+  public interface IGlobalGripClickHandler : IEventSystemHandler {
+    void OnGlobalGripClick(VREventData eventData);
   }
 
   //GLOBAL TRIGGER HANDLER
@@ -222,18 +257,18 @@ namespace FRL.IO {
   }
 
   //GLOBAL APPLICATION MENU
-  public interface IGlobalApplicationMenuHandler : IGlobalApplicationMenuPressDownHandler, IGlobalApplicationMenuPressHandler, IGlobalApplicationMenuPressUpHandler { }
+  public interface IGlobalAppMenuHandler : IGlobalAppMenuPressDownHandler, IGlobalAppMenuPressHandler, IGlobalAppMenuPressUpHandler { }
 
-  public interface IGlobalApplicationMenuPressDownHandler : IEventSystemHandler {
-    void OnGlobalApplicationMenuPressDown(VREventData eventData);
+  public interface IGlobalAppMenuPressDownHandler : IEventSystemHandler {
+    void OnGlobalAppMenuPressDown(VREventData eventData);
   }
 
-  public interface IGlobalApplicationMenuPressHandler : IEventSystemHandler {
-    void OnGlobalApplicationMenuPress(VREventData eventData);
+  public interface IGlobalAppMenuPressHandler : IEventSystemHandler {
+    void OnGlobalAppMenuPress(VREventData eventData);
   }
 
-  public interface IGlobalApplicationMenuPressUpHandler : IEventSystemHandler {
-    void OnGlobalApplicationMenuPressUp(VREventData eventData);
+  public interface IGlobalAppMenuPressUpHandler : IEventSystemHandler {
+    void OnGlobalAppMenuPressUp(VREventData eventData);
   }
 
   //GLOBAL TOUCHPAD 
@@ -266,5 +301,161 @@ namespace FRL.IO {
     void OnGlobalTouchpadTouchUp(VREventData eventData);
   }
 
-  public interface IGlobalPressDownHandler : IGlobalApplicationMenuPressDownHandler, IGlobalGripPressDownHandler, IGlobalTouchpadPressDownHandler, IGlobalTriggerPressDownHandler { }
+  public interface IGlobalPressDownHandler : IGlobalAppMenuPressDownHandler, IGlobalGripPressDownHandler, IGlobalTouchpadPressDownHandler, IGlobalTriggerPressDownHandler { }
+
+  /// <summary>
+  /// A BUTTOn
+  /// </summary>
+
+  public interface IPointerAHandler : IPointerAPressDownHandler, IPointerAPressHandler, IPointerAPressUpHandler { }
+
+  public interface IPointerAPressDownHandler : IEventSystemHandler {
+    void OnPointerAPressDown(VREventData eventData);
+  }
+
+  public interface IPointerAPressHandler : IEventSystemHandler {
+    void OnPointerAPress(VREventData eventData);
+  }
+
+  public interface IPointerAPressUpHandler : IEventSystemHandler {
+    void OnPointerAPressUp(VREventData eventData);
+  }
+
+  public interface IGlobalAHandler : IGlobalAPressDownHandler, IGlobalAPressHandler, IGlobalAPressUpHandler { }
+
+  public interface IGlobalAPressDownHandler : IEventSystemHandler {
+    void OnGlobalAPressDown(VREventData eventData);
+  }
+
+  public interface IGlobalAPressHandler : IEventSystemHandler {
+    void OnGlobalAPress(VREventData eventData);
+  }
+
+  public interface IGlobalAPressUpHandler : IEventSystemHandler {
+    void OnGlobalAPressUp(VREventData eventData);
+  }
+
+  /// <summary>
+  /// B BUTTON
+  /// </summary>
+
+  public interface IPointerBHandler : IPointerBPressDownHandler, IPointerBPressHandler, IPointerBPressUpHandler { }
+
+  public interface IPointerBPressDownHandler : IEventSystemHandler {
+    void OnPointerBPressDown(VREventData eventData);
+  }
+
+  public interface IPointerBPressHandler : IEventSystemHandler {
+    void OnPointerBPress(VREventData eventData);
+  }
+
+  public interface IPointerBPressUpHandler : IEventSystemHandler {
+    void OnPointerBPressUp(VREventData eventData);
+  }
+
+  public interface IGlobalBHandler : IGlobalBPressDownHandler, IGlobalBPressHandler, IGlobalBPressUpHandler { }
+
+  public interface IGlobalBPressDownHandler : IEventSystemHandler {
+    void OnGlobalBPressDown(VREventData eventData);
+  }
+
+  public interface IGlobalBPressHandler : IEventSystemHandler {
+    void OnGlobalBPress(VREventData eventData);
+  }
+
+  public interface IGlobalBPressUpHandler : IEventSystemHandler {
+    void OnGlobalBPressUp(VREventData eventData);
+  }
+
+  /// <summary>
+  /// X BUTTON
+  /// </summary>
+  
+  public interface IPointerXHandler : IPointerXPressDownHandler, IPointerXPressHandler, IPointerXPressUpHandler { }
+
+  public interface IPointerXPressDownHandler : IEventSystemHandler {
+    void OnPointerXPressDown(VREventData eventData);
+  }
+
+  public interface IPointerXPressHandler : IEventSystemHandler {
+    void OnPointerXPress(VREventData eventData);
+  }
+
+  public interface IPointerXPressUpHandler : IEventSystemHandler {
+    void OnPointerXPressUp(VREventData eventData);
+  }
+
+  public interface IGlobalXHandler : IGlobalXPressDownHandler, IGlobalXPressHandler, IGlobalXPressUpHandler { }
+
+  public interface IGlobalXPressDownHandler : IEventSystemHandler {
+    void OnGlobalXPressDown(VREventData eventData);
+  }
+
+  public interface IGlobalXPressHandler : IEventSystemHandler {
+    void OnGlobalXPress(VREventData eventData);
+  }
+
+  public interface IGlobalXPressUpHandler : IEventSystemHandler {
+    void OnGlobalXPressUp(VREventData eventData);
+  }
+
+  /// <summary>
+  /// Y BUTTON
+  /// </summary>
+
+  public interface IPointerYHandler : IPointerYPressDownHandler, IPointerYPressHandler, IPointerYPressUpHandler { }
+
+  public interface IPointerYPressDownHandler : IEventSystemHandler {
+    void OnPointerYPressDown(VREventData eventData);
+  }
+
+  public interface IPointerYPressHandler : IEventSystemHandler {
+    void OnPointerYPress(VREventData eventData);
+  }
+
+  public interface IPointerYPressUpHandler : IEventSystemHandler {
+    void OnPointerYPressUp(VREventData eventData);
+  }
+
+  public interface IGlobalYHandler : IGlobalYPressDownHandler, IGlobalYPressHandler, IGlobalYPressUpHandler { }
+
+  public interface IGlobalYPressDownHandler : IEventSystemHandler {
+    void OnGlobalYPressDown(VREventData eventData);
+  }
+
+  public interface IGlobalYPressHandler : IEventSystemHandler {
+    void OnGlobalYPress(VREventData eventData);
+  }
+
+  public interface IGlobalYPressUpHandler : IEventSystemHandler {
+    void OnGlobalYPressUp(VREventData eventData);
+  }
+
+  public interface IPointerThumbstickHandler : IPointerThumbstickPressDownHandler, IPointerThumbstickPressHandler, IPointerThumbstickPressUpHandler { }
+
+  public interface IPointerThumbstickPressDownHandler : IEventSystemHandler {
+    void OnPointerThumbstickPressDown(VREventData eventData);
+  }
+  
+  public interface IPointerThumbstickPressHandler : IEventSystemHandler {
+    void OnPointerThumbstickPress(VREventData eventData);
+  }
+
+  public interface IPointerThumbstickPressUpHandler : IEventSystemHandler {
+    void OnPointerThumbstickPressUp(VREventData eventData);
+  }
+
+  public interface IGlobalThumbstickHandler : IGlobalThumbstickPressDownHandler, IGlobalThumbstickPressHandler, IGlobalThumbstickPressUpHandler { }
+
+  public interface IGlobalThumbstickPressDownHandler : IEventSystemHandler {
+    void OnGlobalThumbstickPressDown(VREventData eventData);
+  }
+
+  public interface IGlobalThumbstickPressHandler : IEventSystemHandler {
+    void OnGlobalThumbstickPress(VREventData eventData);
+  }
+
+  public interface IGlobalThumbstickPressUpHandler : IEventSystemHandler {
+    void OnGlobalThumbstickPressUp(VREventData eventData);
+  }
 }

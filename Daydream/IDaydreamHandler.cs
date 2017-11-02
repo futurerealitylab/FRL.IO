@@ -5,6 +5,6 @@ using UnityEngine;
 namespace FRL.IO {
   public interface IDaydreamHandler : IPointerDaydreamHandler, IGlobalDaydreamHandler { }
   public interface IPointerDaydreamHandler : IPointerAppMenuHandler, IPointerTouchpadHandler { }
-  public interface IGlobalDaydreamHandler : IGlobalApplicationMenuHandler, IGlobalTouchpadHandler { }
+  public interface IGlobalDaydreamHandler : IGlobalAppMenuHandler, IGlobalTouchpadHandler { }
 }
 

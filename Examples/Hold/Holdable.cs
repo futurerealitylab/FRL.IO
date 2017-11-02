@@ -80,7 +80,7 @@ public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
     }
   }
 
-  public void OnGlobalApplicationMenuPressDown(VREventData eventData) {
+  public void OnGlobalAppMenuPressDown(VREventData eventData) {
     TryHold(eventData.module, ButtonType.AppMenu);
   }
 

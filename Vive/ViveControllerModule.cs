@@ -6,7 +6,6 @@ using System.Collections;
 
 namespace FRL.IO {
   public class ViveControllerModule : PointerInputModule {
-
     private Dictionary<EVRButtonId, GameObject> pressPairings = new Dictionary<EVRButtonId, GameObject>();
     private Dictionary<EVRButtonId, List<Receiver>> pressReceivers = new Dictionary<EVRButtonId, List<Receiver>>();
     private Dictionary<EVRButtonId, GameObject> touchPairings = new Dictionary<EVRButtonId, GameObject>();
@@ -122,11 +121,11 @@ namespace FRL.IO {
       return eventData;
     }
 
-    public Vector2 GetTriggerAxis() {
+    public float GetTriggerAxis() {
       try {
-        return SteamVR_Controller.Input((int)controller.index).GetAxis(axisIds[1]);
+        return SteamVR_Controller.Input((int)controller.index).GetAxis(axisIds[1]).x;
       } catch (System.Exception e) {
-        return Vector2.zero;
+        return 0f;
       }
     }
 
@@ -141,13 +140,13 @@ namespace FRL.IO {
     void HandleButtons() {
       int index = (int)controller.index;
 
-      float previousX = eventData.triggerAxis.x;
+      float previousX = eventData.triggerAxis;
 
-      eventData.touchpadAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[0]);
-      eventData.triggerAxis = SteamVR_Controller.Input(index).GetAxis(axisIds[1]);
+      eventData.touchpadAxis = GetTouchpadAxis();
+      eventData.triggerAxis = GetTriggerAxis();
 
       //Click
-      if (previousX != 1.0f && eventData.triggerAxis.x == 1f) {
+      if (previousX != 1.0f && eventData.triggerAxis == 1f) {
         ExecuteTriggerClick();
       }
 
@@ -201,6 +200,8 @@ namespace FRL.IO {
           eventData.gripPress = go;
           ExecuteEvents.Execute<IPointerGripPressDownHandler>(eventData.gripPress, eventData,
             (x, y) => x.OnPointerGripPressDown(eventData));
+          ExecuteEvents.Execute<IPointerGripClickHandler>(eventData.gripPress, eventData,
+              (x, y) => x.OnPointerGripClick(eventData));
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
           eventData.touchpadPress = go;
@@ -352,14 +353,17 @@ namespace FRL.IO {
         case EVRButtonId.k_EButton_ApplicationMenu:
           foreach (Receiver r in pressReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
-              ExecuteEvents.Execute<IGlobalApplicationMenuPressDownHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalApplicationMenuPressDown(eventData));
+              ExecuteEvents.Execute<IGlobalAppMenuPressDownHandler>(r.gameObject, eventData,
+                (x, y) => x.OnGlobalAppMenuPressDown(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
           foreach (Receiver r in pressReceivers[id])
-            if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
+            if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this))) {
               ExecuteEvents.Execute<IGlobalGripPressDownHandler>(r.gameObject, eventData,
                 (x, y) => x.OnGlobalGripPressDown(eventData));
+              ExecuteEvents.Execute<IGlobalGripClickHandler>(r.gameObject, eventData,
+                (x, y) => x.OnGlobalGripClick(eventData));
+            }
           break;
         case EVRButtonId.k_EButton_SteamVR_Touchpad:
           foreach (Receiver r in pressReceivers[id])
@@ -387,8 +391,8 @@ namespace FRL.IO {
         case EVRButtonId.k_EButton_ApplicationMenu:
           foreach (Receiver r in pressReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
-              ExecuteEvents.Execute<IGlobalApplicationMenuPressHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalApplicationMenuPress(eventData));
+              ExecuteEvents.Execute<IGlobalAppMenuPressHandler>(r.gameObject, eventData,
+                (x, y) => x.OnGlobalAppMenuPress(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
           foreach (Receiver r in pressReceivers[id])
@@ -422,8 +426,8 @@ namespace FRL.IO {
         case EVRButtonId.k_EButton_ApplicationMenu:
           foreach (Receiver r in pressReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
-              ExecuteEvents.Execute<IGlobalApplicationMenuPressUpHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalApplicationMenuPressUp(eventData));
+              ExecuteEvents.Execute<IGlobalAppMenuPressUpHandler>(r.gameObject, eventData,
+                (x, y) => x.OnGlobalAppMenuPressUp(eventData));
           break;
         case EVRButtonId.k_EButton_Grip:
           foreach (Receiver r in pressReceivers[id])
@@ -446,7 +450,6 @@ namespace FRL.IO {
         default:
           throw new System.Exception("Unknown/Illegal EVRButtonId.");
       }
-
       //Remove paired list
       pressReceivers[id] = null;
     }
@@ -560,11 +563,9 @@ namespace FRL.IO {
     private bool GetTouchUp(int index, EVRButtonId button) {
       return SteamVR_Controller.Input(index).GetTouchUp(button);
     }
-
     public class EventData : VREventData {
-
       /// <summary>
-      /// The ViveControllerModule that manages the instance of ViveEventData.
+      /// The ViveControllerModule that manages the instance of EventData.
       /// </summary>
       public ViveControllerModule viveControllerModule {
         get; private set;
@@ -576,13 +577,11 @@ namespace FRL.IO {
       public SteamVR_TrackedObject steamVRTrackedObject {
         get; private set;
       }
-
       internal EventData(ViveControllerModule module, SteamVR_TrackedObject trackedObject)
         : base(module) {
         this.viveControllerModule = module;
         this.steamVRTrackedObject = trackedObject;
       }
-
       /// <summary>
       /// Reset the event data fields. 
       /// </summary>

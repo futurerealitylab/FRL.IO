@@ -26,8 +26,11 @@ public class TeleportController : MonoBehaviour, IGlobalTriggerClickHandler {
     if (receiver.module == null) {
       Debug.LogError("TeleportController " + name + " does not have a module. It requires a module.");
     }
-
-    ViveControllerModule.EventData eventData = (receiver.module as ViveControllerModule).GetEventData();
+#if VIVE
+    PointerEventData eventData = (receiver.module as ViveControllerModule).GetEventData();
+#else
+    PointerEventData eventData = new PointerEventData(null);
+#endif
     if (eventData.currentRaycast != null) {
       if (eventData.currentRaycast.GetComponent<TeleportLocation>() != null) {
         EnableCursorAndLine(eventData, validCastColor);

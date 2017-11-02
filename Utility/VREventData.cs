@@ -10,7 +10,7 @@ namespace FRL.IO {
       internal set;
     }
 
-    public Vector2 triggerAxis {
+    public float triggerAxis {
       get;
       internal set;
     }
@@ -72,7 +72,7 @@ namespace FRL.IO {
       base.Reset();
 
       touchpadAxis = Vector2.zero;
-      triggerAxis = Vector2.zero;
+      triggerAxis = 0f;
       appMenuPress = null;
       gripPress = null;
       touchpadPress = null;

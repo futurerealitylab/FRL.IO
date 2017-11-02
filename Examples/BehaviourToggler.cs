@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System;
 
 namespace FRL.IO {
-  public class BehaviourToggler : MonoBehaviour, IGlobalTriggerPressDownHandler, IGlobalApplicationMenuPressDownHandler, 
+  public class BehaviourToggler : MonoBehaviour, IGlobalTriggerPressDownHandler, IGlobalAppMenuPressDownHandler, 
     IGlobalGripPressDownHandler, IGlobalTouchpadPressDownHandler, IGlobalTriggerTouchDownHandler, IGlobalTouchpadTouchDownHandler {
 
     public ButtonType button = ButtonType.Grip;
@@ -21,7 +21,7 @@ namespace FRL.IO {
       }
     }
 
-    void IGlobalApplicationMenuPressDownHandler.OnGlobalApplicationMenuPressDown(VREventData eventData) {
+    void IGlobalAppMenuPressDownHandler.OnGlobalAppMenuPressDown(VREventData eventData) {
       if (button == ButtonType.AppMenu)
         Toggle();
     }

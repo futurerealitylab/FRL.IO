@@ -1,10 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.EventSystems;
-
-namespace FRL.IO {
+﻿namespace FRL.IO {
 	public interface IViveHandler : IPointerViveHandler, IGlobalViveHandler { }
 
 	public interface IPointerViveHandler : IPointerAppMenuHandler, IPointerGripHandler, IPointerTouchpadHandler, IPointerTriggerHandler { }
-	public interface IGlobalViveHandler : IGlobalGripHandler, IGlobalTriggerHandler, IGlobalApplicationMenuHandler, IGlobalTouchpadHandler { }
+	public interface IGlobalViveHandler : IGlobalGripHandler, IGlobalTriggerHandler, IGlobalAppMenuHandler, IGlobalTouchpadHandler { }
 }
