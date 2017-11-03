@@ -6,7 +6,7 @@ using System;
 
 [RequireComponent(typeof(Receiver))]
 [RequireComponent(typeof(Collider))]
-public class Holdable : MonoBehaviour, IGlobalPressDownHandler {
+public class Holdable : MonoBehaviour, IGlobalGripPressDownHandler, IGlobalTouchpadPressDownHandler, IGlobalTriggerPressDownHandler, IGlobalAppMenuPressDownHandler {
 
 
   public ButtonType button;

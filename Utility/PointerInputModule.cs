@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace FRL.IO {
-  public class PointerInputModule : BaseInputModule {
+  public abstract class PointerInputModule : BaseInputModule {
 
     [Tooltip("Optional tag for limiting interaction.")]
     public string interactTag;
@@ -11,13 +11,23 @@ namespace FRL.IO {
     [Tooltip("Interaction range of the module.")]
     public float interactDistance = 10f;
 
+
+
     private List<RaycastHit> hits = new List<RaycastHit>();
     private Ray ray;
 
-    protected new VREventData eventData;
+    protected override BaseEventData baseEventData {
+      get {
+        return eventData;
+      }
+    }
+
+    protected abstract VREventData eventData {
+      get;
+    }
 
     protected virtual void Awake() {
-      eventData = new VREventData(this);
+
     }
 
     protected override void Process() {

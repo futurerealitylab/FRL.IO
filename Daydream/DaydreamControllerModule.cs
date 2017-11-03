@@ -4,6 +4,14 @@ using UnityEngine;
 
 namespace FRL.IO {
   public class DaydreamControllerModule : PointerInputModule {
+    private EventData _eventData;
+
+    protected override VREventData eventData {
+      get {
+        return _eventData;
+      }
+    }
+
 #if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
 
     private Dictionary<Button, GameObject> pairings = new Dictionary<Button, GameObject>();
@@ -17,10 +25,10 @@ namespace FRL.IO {
       Button.CLICK, Button.TOUCH, Button.APPBUTTON
     };
 
-    private new EventData eventData;
+
 
     protected override void Awake() {
-      eventData = new EventData(this);
+      _eventData = new EventData(this);
 
       foreach(Button b in buttonTypes) {
         pairings.Add(b, null);
@@ -36,7 +44,7 @@ namespace FRL.IO {
         ExecuteGlobalButtonUp(b);
       }
 
-      eventData.Reset();
+      _eventData.Reset();
     }
 
     // Update is called once per frame
@@ -53,7 +61,7 @@ namespace FRL.IO {
 
     public EventData GetEventData() {
       Update();
-      return (EventData)eventData;
+      return (EventData)_eventData;
     }
 
     protected override void Process() {
@@ -64,7 +72,7 @@ namespace FRL.IO {
 
 
     void HandleButtons() {
-      eventData.touchpadAxis = GetTouchpadAxis();
+      _eventData.touchpadAxis = GetTouchpadAxis();
 
       foreach(Button button in buttonTypes) {
         if (GetButtonDown(button)) {
@@ -81,7 +89,7 @@ namespace FRL.IO {
     }
 
     private void ExecuteButtonDown(Button button) {
-      GameObject go = eventData.currentRaycast;
+      GameObject go = _eventData.currentRaycast;
       if (go == null)
         return;
 
@@ -91,19 +99,19 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.CLICK:
-          eventData.touchpadPress = go;
-          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(eventData.touchpadPress, eventData,
-            (x, y) => x.OnPointerTouchpadPressDown(eventData));
+          _eventData.touchpadPress = go;
+          ExecuteEvents.Execute<IPointerTouchpadPressDownHandler>(_eventData.touchpadPress, _eventData,
+            (x, y) => x.OnPointerTouchpadPressDown(_eventData));
           break;
         case Button.TOUCH:
-          eventData.touchpadTouch = go;
-          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(eventData.touchpadTouch, eventData,
-            (x, y) => x.OnPointerTouchpadTouchDown(eventData));
+          _eventData.touchpadTouch = go;
+          ExecuteEvents.Execute<IPointerTouchpadTouchDownHandler>(_eventData.touchpadTouch, _eventData,
+            (x, y) => x.OnPointerTouchpadTouchDown(_eventData));
           break;
         case Button.APPBUTTON:
-          eventData.appMenuPress = go;
-          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(eventData.appMenuPress, eventData,
-            (x, y) => x.OnPointerAppMenuPressDown(eventData));
+          _eventData.appMenuPress = go;
+          ExecuteEvents.Execute<IPointerAppMenuPressDownHandler>(_eventData.appMenuPress, _eventData,
+            (x, y) => x.OnPointerAppMenuPressDown(_eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal Daydream Button.");
@@ -117,16 +125,16 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.CLICK:
-          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(eventData.touchpadPress, eventData,
-            (x, y) => x.OnPointerTouchpadPress(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadPressHandler>(_eventData.touchpadPress, _eventData,
+            (x, y) => x.OnPointerTouchpadPress(_eventData));
           break;
         case Button.TOUCH:
-          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(eventData.touchpadTouch, eventData,
-            (x, y) => x.OnPointerTouchpadTouch(eventData));
+          ExecuteEvents.Execute<IPointerTouchpadTouchHandler>(_eventData.touchpadTouch, _eventData,
+            (x, y) => x.OnPointerTouchpadTouch(_eventData));
           break;
         case Button.APPBUTTON:
-          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(eventData.appMenuPress, eventData,
-            (x, y) => x.OnPointerAppMenuPress(eventData));
+          ExecuteEvents.Execute<IPointerAppMenuPressHandler>(_eventData.appMenuPress, _eventData,
+            (x, y) => x.OnPointerAppMenuPress(_eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal Daydream Button.");
@@ -138,19 +146,19 @@ namespace FRL.IO {
 
       switch (button) {
         case Button.APPBUTTON:
-          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(eventData.appMenuPress, eventData,
-            (x, y) => x.OnPointerAppMenuPressUp(eventData));
-          eventData.appMenuPress = null;
+          ExecuteEvents.Execute<IPointerAppMenuPressUpHandler>(_eventData.appMenuPress, _eventData,
+            (x, y) => x.OnPointerAppMenuPressUp(_eventData));
+          _eventData.appMenuPress = null;
           break;
         case Button.CLICK:
-          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(eventData.touchpadPress, eventData,
-            (x, y) => x.OnPointerTouchpadPressUp(eventData));
-          eventData.touchpadPress = null;
+          ExecuteEvents.Execute<IPointerTouchpadPressUpHandler>(_eventData.touchpadPress, _eventData,
+            (x, y) => x.OnPointerTouchpadPressUp(_eventData));
+          _eventData.touchpadPress = null;
           break;
         case Button.TOUCH:
-          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(eventData.touchpadTouch, eventData,
-            (x, y) => x.OnPointerTouchpadTouchUp(eventData));
-          eventData.touchpadTouch = null;
+          ExecuteEvents.Execute<IPointerTouchpadTouchUpHandler>(_eventData.touchpadTouch, _eventData,
+            (x, y) => x.OnPointerTouchpadTouchUp(_eventData));
+          _eventData.touchpadTouch = null;
           break;
         default:
           throw new System.Exception("Unknown/Illegal Daydream Button.");
@@ -168,20 +176,20 @@ namespace FRL.IO {
         case Button.APPBUTTON:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalApplicationMenuPressDownHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalApplicationMenuPressDown(eventData));
+              ExecuteEvents.Execute<IGlobalApplicationMenuPressDownHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalApplicationMenuPressDown(_eventData));
           break;
         case Button.CLICK:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalTouchpadPressDownHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalTouchpadPressDown(eventData));
+              ExecuteEvents.Execute<IGlobalTouchpadPressDownHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalTouchpadPressDown(_eventData));
           break;
         case Button.TOUCH:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalTouchpadTouchDownHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalTouchpadTouchDown(eventData));
+              ExecuteEvents.Execute<IGlobalTouchpadTouchDownHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalTouchpadTouchDown(_eventData));
           break;
 
         default:
@@ -196,20 +204,20 @@ namespace FRL.IO {
         case Button.APPBUTTON:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalApplicationMenuPressHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalApplicationMenuPress(eventData));
+              ExecuteEvents.Execute<IGlobalApplicationMenuPressHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalApplicationMenuPress(_eventData));
           break;
         case Button.CLICK:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalTouchpadPressHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalTouchpadPress(eventData));
+              ExecuteEvents.Execute<IGlobalTouchpadPressHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalTouchpadPress(_eventData));
           break;
         case Button.TOUCH:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalTouchpadTouchHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalTouchpadTouch(eventData));
+              ExecuteEvents.Execute<IGlobalTouchpadTouchHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalTouchpadTouch(_eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal Daydream Button.");
@@ -223,20 +231,20 @@ namespace FRL.IO {
         case Button.APPBUTTON:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalApplicationMenuPressUpHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalApplicationMenuPressUp(eventData));
+              ExecuteEvents.Execute<IGlobalApplicationMenuPressUpHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalApplicationMenuPressUp(_eventData));
           break;
         case Button.CLICK:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalTouchpadPressUpHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalTouchpadPressUp(eventData));
+              ExecuteEvents.Execute<IGlobalTouchpadPressUpHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalTouchpadPressUp(_eventData));
           break;
         case Button.TOUCH:
           foreach (Receiver r in receivers[button])
             if (!r.module || r.module.Equals(this))
-              ExecuteEvents.Execute<IGlobalTouchpadTouchUpHandler>(r.gameObject, eventData,
-                (x, y) => x.OnGlobalTouchpadTouchUp(eventData));
+              ExecuteEvents.Execute<IGlobalTouchpadTouchUpHandler>(r.gameObject, _eventData,
+                (x, y) => x.OnGlobalTouchpadTouchUp(_eventData));
           break;
         default:
           throw new System.Exception("Unknown/Illegal Daydream Button.");

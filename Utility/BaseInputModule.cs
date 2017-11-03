@@ -4,7 +4,9 @@ using System.Collections;
 namespace FRL.IO {
   public abstract class BaseInputModule : MonoBehaviour {
 
-    protected BaseEventData eventData;
+    protected abstract BaseEventData baseEventData {
+      get;
+    }
 
     protected bool hasBeenProcessed = false;
 
