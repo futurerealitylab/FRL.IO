@@ -102,7 +102,7 @@ namespace FRL.IO {
 
     private Dictionary<XRSystem, Dictionary<XRButton, KeyCode>> rightPressMappings = new Dictionary<XRSystem, Dictionary<XRButton, KeyCode>>() {
       {XRSystem.CV1, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Thumbstick, KeyCode.JoystickButton8},
+        {XRButton.Thumbstick, KeyCode.JoystickButton9},
         {XRButton.A, KeyCode.JoystickButton0},
         {XRButton.B, KeyCode.JoystickButton1}
       }},
