@@ -51,7 +51,7 @@ namespace FRL.IO {
 
     public Hand hand;
 
-    public XRSystem System { get; set; }
+    public XRSystem System;
 
     private float previousTriggerAxis, previousGripAxis;
     private Vector2 previousTouchpadAxis, previousThumbstickAxis;
