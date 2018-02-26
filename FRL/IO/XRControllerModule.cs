@@ -6,13 +6,13 @@ using UnityEngine.XR;
 
 namespace FRL.IO {
 
-  public enum Hand { Left, Right };
+  public enum XRHand { Left, Right, None };
   public enum XRButton {
     Trigger, Grip, Touchpad, Menu, Thumbstick, A, B, X, Y, Forward, Back, Left, Right
   }
 
   public class XREventData : PointerEventData {
-    public Hand hand;
+    public XRHand hand;
     public Vector2 touchpadAxis, thumbstickAxis;
     public float gripAxis, triggerAxis;
     public Vector3 velocity, acceleration;
@@ -49,9 +49,21 @@ namespace FRL.IO {
 
   public class XRControllerModule : PointerInputModule {
 
-    public Hand hand;
+    private static List<XRControllerModule> _modules = new List<XRControllerModule>();
+    public static List<XRControllerModule> Modules {
+      get { return _modules; }
+    }
 
-    public XRSystem System;
+    public XRHand hand;
+
+    private XRSystem _system;
+    public XRSystem System {
+      get { return _system; }
+      set {
+        _system = value;
+        status = GetControllerStatus();
+      }
+    }
 
     private float previousTriggerAxis, previousGripAxis;
     private Vector2 previousTouchpadAxis, previousThumbstickAxis;
@@ -65,82 +77,13 @@ namespace FRL.IO {
     private Dictionary<XRButton, GameObject> touchPairings = new Dictionary<XRButton, GameObject>();
     private Dictionary<XRButton, List<Receiver>> touchReceivers = new Dictionary<XRButton, List<Receiver>>();
 
-    private Dictionary<XRSystem, Dictionary<XRButton, KeyCode>> leftPressMappings = new Dictionary<XRSystem, Dictionary<XRButton,KeyCode>>() {
-      {XRSystem.CV1, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Menu, KeyCode.JoystickButton7},
-        {XRButton.Thumbstick, KeyCode.JoystickButton8},
-        {XRButton.X, KeyCode.JoystickButton2},
-        {XRButton.Y, KeyCode.JoystickButton3},
-      }},
-      {XRSystem.WindowsMR, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Menu, KeyCode.JoystickButton6},
-        {XRButton.Thumbstick, KeyCode.JoystickButton8},
-        {XRButton.Touchpad, KeyCode.JoystickButton16},
-      }},
-      {XRSystem.Vive, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Menu, KeyCode.JoystickButton2},
-        {XRButton.Touchpad, KeyCode.JoystickButton8},
-      }},
-    };
-
-    private Dictionary<XRSystem, Dictionary<XRButton, KeyCode>> leftTouchMappings = new Dictionary<XRSystem, Dictionary<XRButton, KeyCode>>() {
-      {XRSystem.CV1, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Thumbstick, KeyCode.JoystickButton16},
-        {XRButton.X, KeyCode.JoystickButton12},
-        {XRButton.Y, KeyCode.JoystickButton13},
-        {XRButton.Touchpad, KeyCode.JoystickButton18},
-        //{XRButton.Trigger, KeyCode.JoystickButton14},
-      }},
-      {XRSystem.WindowsMR, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Touchpad, KeyCode.JoystickButton18},
-      }},
-      {XRSystem.Vive, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Touchpad, KeyCode.JoystickButton16},
-        //{XRButton.Trigger, KeyCode.JoystickButton14}
-      }}
-    };
-
-    private Dictionary<XRSystem, Dictionary<XRButton, KeyCode>> rightPressMappings = new Dictionary<XRSystem, Dictionary<XRButton, KeyCode>>() {
-      {XRSystem.CV1, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Thumbstick, KeyCode.JoystickButton9},
-        {XRButton.A, KeyCode.JoystickButton0},
-        {XRButton.B, KeyCode.JoystickButton1}
-      }},
-      {XRSystem.WindowsMR, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Menu, KeyCode.JoystickButton7},
-        {XRButton.Thumbstick, KeyCode.JoystickButton9},
-        {XRButton.Touchpad, KeyCode.JoystickButton17},
-      }},
-      {XRSystem.Vive, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Menu, KeyCode.JoystickButton0},
-        {XRButton.Touchpad, KeyCode.JoystickButton9}
-      }}
-    };
-
-   private Dictionary<XRSystem, Dictionary<XRButton, KeyCode>> rightTouchMappings = new Dictionary<XRSystem, Dictionary<XRButton, KeyCode>>() {
-      {XRSystem.CV1, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Thumbstick, KeyCode.JoystickButton17},
-        {XRButton.X, KeyCode.JoystickButton10},
-        {XRButton.Y, KeyCode.JoystickButton11},
-        {XRButton.Touchpad, KeyCode.JoystickButton19},
-        //{XRButton.Trigger, KeyCode.JoystickButton15},
-      }},
-      {XRSystem.WindowsMR, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Touchpad, KeyCode.JoystickButton19},
-      }},
-      {XRSystem.Vive, new Dictionary<XRButton, KeyCode> {
-        {XRButton.Touchpad, KeyCode.JoystickButton17},
-        //{XRButton.Trigger, KeyCode.JoystickButton15}
-      }}
-    };
-
-
     protected override PointerEventData pointerEventData {
       get {
         return xrEventData;
       }
     }
 
+    private XRControllerStatus status;
     private XREventData eventData;
     public XREventData xrEventData {
       get { return eventData; }
@@ -158,6 +101,11 @@ namespace FRL.IO {
     protected override void Awake() {
       base.Awake();
       eventData = new XREventData(this);
+      status = GetControllerStatus();
+    }
+
+    protected virtual void OnEnable() {
+      _modules.Add(this);
       foreach (XRButton button in XRButtons) {
         pressPairings.Add(button, null);
         pressReceivers.Add(button, null);
@@ -168,6 +116,7 @@ namespace FRL.IO {
 
     protected override void OnDisable() {
       base.OnDisable();
+      _modules.Remove(this);
       foreach (XRButton button in XRButtons) {
         ExecutePressUp(button);
         ExecuteGlobalPressUp(button);
@@ -177,345 +126,99 @@ namespace FRL.IO {
       xrEventData.Reset();
     }
 
+    private XRControllerStatus GetControllerStatus() {
+      switch (this.System) {
+        case XRSystem.ViveFocus:
+          return new FocusControllerStatus(this.hand);
+        case XRSystem.Vive:
+          return new ViveControllerStatus(this.hand);
+        case XRSystem.CV1:
+          return new OculusTouchControllerStatus(this.hand);
+        case XRSystem.Daydream:
+          return new DaydreamControllerStatus(this.hand);
+        case XRSystem.WindowsMR:
+          return new WMRControllerStatus(this.hand);
+        case XRSystem.GearVR:
+          return new GVRControllerStatus(this.hand);
+        case XRSystem.Standalone:
+          return new StandaloneControllerStatus();
+        default:
+          return new BrokenControllerStatus(this.hand, "Unknown XRSystem");
+      }
+    }
+
     protected override void Process() {
-      PlaceController();
+      status.Generate();
+
+      this.isTracked = status.IsTracked;
+      if (this.IsTracked) {
+        this.transform.localPosition = status.Position;
+        this.transform.localRotation = status.Rotation;
+      }
+
+      this.xrEventData.hand = this.hand;
+      this.xrEventData.velocity = status.Velocity;
+      this.xrEventData.acceleration = status.Acceleration;
+      this.xrEventData.triggerAxis = status.TriggerAxis;
+      this.xrEventData.gripAxis = status.GripAxis;
+      this.xrEventData.thumbstickAxis = status.ThumbstickAxis;
+      this.xrEventData.touchpadAxis = status.TouchpadAxis;
+
       base.Process();
-      xrEventData.hand = this.hand;
-
-      xrEventData.velocity = (transform.position - previousPosition) / Time.deltaTime;
-      xrEventData.acceleration = (xrEventData.velocity - previousVelocity) / Time.deltaTime;
-
-      previousVelocity = xrEventData.velocity;
-      previousAcceleration = xrEventData.acceleration;
-
       this.HandleButtons();
     }
 
-
     void HandleButtons() {
-      previousTouchpadAxis = xrEventData.touchpadAxis;
-      previousThumbstickAxis = xrEventData.thumbstickAxis;
-      previousGripAxis = xrEventData.gripAxis;
-      previousTriggerAxis = xrEventData.triggerAxis;
-
-
-      xrEventData.triggerAxis = GetTriggerAxis();
-      xrEventData.gripAxis = GetGripAxis();
-      xrEventData.thumbstickAxis = GetThumbstickAxis();
-      xrEventData.touchpadAxis = GetTouchpadAxis();
-
-      if (previousTriggerAxis != 1f && xrEventData.triggerAxis == 1f) {
-        ExecuteTriggerClick();
-      }
-      if (previousGripAxis != 1f && xrEventData.gripAxis == 1f) {
-        ExecuteGripClick();
-      }
+      if (status.GetClick(XRButton.Trigger)) ExecuteTriggerClick();
+      if (status.GetClick(XRButton.Grip)) ExecuteGripClick();
 
       foreach (XRButton button in XRButtons) {
-        if (GetPressDown(button)) {
+        if (status.GetPressDown(button)) {
           ExecutePressDown(button);
           ExecuteGlobalPressDown(button);
         }
-        if (GetPress(button)) {
+        if (status.GetPress(button)) {
           ExecutePress(button);
           ExecuteGlobalPress(button);
         }
-        if (GetPressUp(button)) {
+        if (status.GetPressUp(button)) {
           ExecutePressUp(button);
           ExecuteGlobalPressUp(button);
         }
-        if (GetTouchDown(button)) {
+        if (status.GetTouchDown(button)) {
           ExecuteTouchDown(button);
           ExecuteGlobalTouchDown(button);
         }
-        if (GetTouch(button)) {
+        if (status.GetTouch(button)) {
           ExecuteTouch(button);
           ExecuteGlobalTouch(button);
         }
-        if (GetTouchUp(button)) {
+        if (status.GetTouchUp(button)) {
           ExecuteTouchUp(button);
           ExecuteGlobalTouchUp(button);
         }
       }
     }
 
-    public void PlaceController() {
-      previousPosition = this.transform.localPosition;
-      previousRotation = this.transform.localRotation;
-      switch (System) {
-        case XRSystem.CV1:
-        case XRSystem.Vive:
-          PlaceXR();
-          break;
-        case XRSystem.WindowsMR:
-          PlaceWMR();
-          break;
-        case XRSystem.GearVR:
-          PlaceGearVR();
-          break;
-        default:
-          isTracked = false;
-          break;
-      }
-    }
-
-    public void PlaceXR() {
-      var node = hand == Hand.Left ? UnityEngine.XR.XRNode.LeftHand : UnityEngine.XR.XRNode.RightHand;
-      this.transform.localPosition = UnityEngine.XR.InputTracking.GetLocalPosition(node);
-      this.transform.localRotation = UnityEngine.XR.InputTracking.GetLocalRotation(node);
-      isTracked = previousPosition != this.transform.localPosition && previousRotation != this.transform.localRotation;
-    }
-
-    public void PlaceWMR() {
-      UnityEngine.XR.XRNode controller = hand == Hand.Left ? UnityEngine.XR.XRNode.LeftHand : UnityEngine.XR.XRNode.RightHand;
-      this.transform.localPosition = UnityEngine.XR.InputTracking.GetLocalPosition(controller);
-      this.transform.localRotation = UnityEngine.XR.InputTracking.GetLocalRotation(controller);
-      isTracked = this.transform.localPosition != previousPosition || this.transform.localRotation != previousRotation;
-    }
-
-    public void PlaceGearVR() {
-      OVRInput.Controller controller = OVRInput.GetActiveController();
-      Vector3 position = OVRInput.GetLocalControllerPosition(controller);
-      Quaternion rotation = OVRInput.GetLocalControllerRotation(controller);
-      this.transform.localPosition = Camera.main.transform.position + position;
-      this.transform.localRotation = rotation;
-      isTracked = OVRInput.GetActiveController() == controller;
-    }
-
     public Vector2 GetThumbstickAxis() {
-      string handLabel = hand == Hand.Left ? "L" : "R";
-      switch (System) {
-        case XRSystem.CV1:
-        case XRSystem.WindowsMR:
-          return new Vector2(Input.GetAxis(handLabel + "ThumbstickX"), Input.GetAxis(handLabel + "ThumbstickY"));;
-        default:
-          return Vector2.zero;
-      }
+      return status.ThumbstickAxis;
     }
 
     public Vector2 GetTouchpadAxis() {
-      string xLabel;
-      string yLabel;
-      string handLabel = hand == Hand.Left ? "L" : "R";
-      switch (System) {
-        case XRSystem.Vive:
-          xLabel = handLabel + "ThumbstickX";
-          yLabel = handLabel + "ThumbstickY";
-          break;
-        case XRSystem.WindowsMR:
-          xLabel = "WMR_" + handLabel + "TouchpadX";
-          yLabel = "WMR_" + handLabel + "TouchpadY";
-          break;
-        case XRSystem.GearVR:
-          return OVRInput.Get(OVRInput.Axis2D.PrimaryTouchpad);
-        default:
-          return Vector2.zero;
-      }
-      return new Vector2(Input.GetAxis(xLabel), Input.GetAxis(yLabel));
+      return status.TouchpadAxis;
     }
 
     public float GetTriggerAxis() {
-      switch (System) {
-        case XRSystem.Vive:
-        case XRSystem.CV1:
-        case XRSystem.WindowsMR:
-          return Input.GetAxis((hand == Hand.Left ? "L" : "R") + "Trigger");
-        case XRSystem.GearVR:
-          return OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger);
-        default:
-          return 0;
-      }
+      return status.TriggerAxis;
     }
 
     public float GetGripAxis() {
-      switch (System) {
-        case XRSystem.Vive:
-        case XRSystem.CV1:
-        case XRSystem.WindowsMR:
-          return Input.GetAxis((hand == Hand.Left ? "L" : "R") + "Grip");
-        default:
-          return 0;
-      }
-    }
-
-    protected bool GetPressDown(XRButton button) {
-      if (System == XRSystem.GearVR) {
-        switch (button) {
-          case XRButton.Trigger:
-            return OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger);
-          case XRButton.Menu:
-            return OVRInput.GetDown(OVRInput.Button.Back);
-          case XRButton.Touchpad:
-            return OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad);
-          default:
-            return false;
-        }
-      }
-
-      KeyCode key = KeyCode.None;
-      var mapping = hand == Hand.Left ? leftPressMappings : rightPressMappings;
-      if (mapping.ContainsKey(System)) {
-        var keys = mapping[System];
-        switch (button) {
-          case XRButton.Trigger:
-            return previousTriggerAxis < 0.5f && xrEventData.triggerAxis >= 0.5f;
-          case XRButton.Grip:
-            return previousGripAxis < 0.5f && xrEventData.gripAxis >= 0.5f;
-          case XRButton.Forward:
-            return previousThumbstickAxis.y < 0.5f && xrEventData.thumbstickAxis.y >= 0.5f;
-          case XRButton.Back:
-            return previousThumbstickAxis.y > -0.5f && xrEventData.thumbstickAxis.y <= -0.5f;
-          case XRButton.Left:
-            return previousThumbstickAxis.x > -0.5f && xrEventData.thumbstickAxis.x <= -0.5f;
-          case XRButton.Right:
-            return previousThumbstickAxis.x < 0.5f && xrEventData.thumbstickAxis.x >= 0.5f;
-        }
-        if (keys.ContainsKey(button))
-          key = keys[button];
-      }
-      return Input.GetKeyDown(key);
-    }
-
-    protected bool GetPress(XRButton button) {
-      if (System == XRSystem.GearVR) {
-        switch (button) {
-          case XRButton.Trigger:
-            return OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger);
-          case XRButton.Menu:
-            return OVRInput.Get(OVRInput.Button.Back);
-          case XRButton.Touchpad:
-            return OVRInput.Get(OVRInput.Button.PrimaryTouchpad);
-          default:
-            return false;
-        }
-      }
-
-      KeyCode key = KeyCode.None;
-      var mapping = hand == Hand.Left ? leftPressMappings : rightPressMappings;
-      if (mapping.ContainsKey(System)) {
-        var keys = mapping[System];
-        switch (button) {
-          case XRButton.Trigger:
-            return previousTriggerAxis >= 0.5f && xrEventData.triggerAxis >= 0.5f;
-          case XRButton.Grip:
-            return previousGripAxis >= 0.5f && xrEventData.gripAxis >= 0.5f;
-          case XRButton.Forward:
-            return previousThumbstickAxis.y >= 0.5f && xrEventData.thumbstickAxis.y >= 0.5f;
-          case XRButton.Back:
-            return previousThumbstickAxis.y <= -0.5f && xrEventData.thumbstickAxis.y <= -0.5f;
-          case XRButton.Left:
-            return previousThumbstickAxis.x <= -0.5f && xrEventData.thumbstickAxis.x <= -0.5f;
-          case XRButton.Right:
-            return previousThumbstickAxis.x >= 0.5f && xrEventData.thumbstickAxis.x >= 0.5f;
-        }
-        if (keys.ContainsKey(button))
-          key = keys[button];
-      }
-      return Input.GetKey(key);
-    }
-
-    protected bool GetPressUp(XRButton button) {
-      if (System == XRSystem.GearVR) {
-        switch (button) {
-          case XRButton.Trigger:
-            return OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger);
-          case XRButton.Menu:
-            return OVRInput.GetUp(OVRInput.Button.Back);
-          case XRButton.Touchpad:
-            return OVRInput.GetUp(OVRInput.Button.PrimaryTouchpad);
-          default:
-            return false;
-        }
-      }
-
-      KeyCode key = KeyCode.None;
-      var mapping = hand == Hand.Left ? leftPressMappings : rightPressMappings;
-      if (mapping.ContainsKey(System)) {
-        var keys = mapping[System];
-        switch (button) {
-          case XRButton.Trigger:
-            return previousTriggerAxis >= 0.5f && xrEventData.triggerAxis < 0.5f;
-          case XRButton.Grip:
-            return previousGripAxis >= 0.5f && xrEventData.gripAxis <= 0.5f;
-          case XRButton.Forward:
-            return previousThumbstickAxis.y >= 0.5f && xrEventData.thumbstickAxis.y < 0.5f;
-          case XRButton.Back:
-            return previousThumbstickAxis.y <= -0.5f && xrEventData.thumbstickAxis.y > -0.5f;
-          case XRButton.Left:
-            return previousThumbstickAxis.x <= -0.5f && xrEventData.thumbstickAxis.x > -0.5f;
-          case XRButton.Right:
-            return previousThumbstickAxis.x >= 0.5f && xrEventData.thumbstickAxis.x < 0.5f;
-        }
-        if (keys.ContainsKey(button))
-          key = keys[button];
-      }
-      return Input.GetKeyUp(key);
-    }
-
-    protected bool GetTouchDown(XRButton button) {
-      if (System == XRSystem.GearVR && button == XRButton.Touchpad)
-        return OVRInput.GetDown(OVRInput.Touch.PrimaryTouchpad);
-
-      KeyCode key = KeyCode.None;
-      var mapping = hand == Hand.Left ? leftTouchMappings : rightTouchMappings;
-      if (mapping.ContainsKey(System)) {
-        var keys = mapping[System];
-        switch (button) {
-          case XRButton.Trigger:
-            return previousTriggerAxis == 0f && xrEventData.triggerAxis > 0f;
-          case XRButton.Grip:
-            return previousGripAxis == 0f && xrEventData.gripAxis > 0f;
-        }
-        if (keys.ContainsKey(button))
-          key = keys[button];
-      }
-      return Input.GetKeyDown(key);
-    }
-
-    protected bool GetTouch(XRButton button) {
-      if (System == XRSystem.GearVR && button == XRButton.Touchpad)
-        return OVRInput.Get(OVRInput.Touch.PrimaryTouchpad);
-
-      KeyCode key = KeyCode.None;
-      var mapping = hand == Hand.Left ? leftTouchMappings : rightTouchMappings;
-      if (mapping.ContainsKey(System)) {
-        var keys = mapping[System];
-        switch (button) {
-          case XRButton.Trigger:
-            return previousTriggerAxis > 0f && xrEventData.triggerAxis > 0f;
-          case XRButton.Grip:
-            return previousGripAxis > 0f && xrEventData.gripAxis > 0f;
-        }
-        if (keys.ContainsKey(button))
-          key = keys[button];
-      }
-      return Input.GetKey(key);
-    }
-
-    protected bool GetTouchUp(XRButton button) {
-      if (System == XRSystem.GearVR && button == XRButton.Touchpad)
-        return OVRInput.GetUp(OVRInput.Touch.PrimaryTouchpad);
-
-      KeyCode key = KeyCode.None;
-      var mapping = hand == Hand.Left ? leftTouchMappings : rightTouchMappings;
-      if (mapping.ContainsKey(System)) {
-        var keys = mapping[System];
-        switch (button) {
-          case XRButton.Trigger:
-            return previousTriggerAxis > 0f && xrEventData.triggerAxis == 0f;
-          case XRButton.Grip:
-            return previousGripAxis > 0f && xrEventData.gripAxis == 0f;
-        }
-        if (keys.ContainsKey(button))
-          key = keys[button];
-      }
-      return Input.GetKeyUp(key);
+      return status.GripAxis;
     }
 
     protected bool GetClick(XRButton button) {
-      return false;
+      return status.GetClick(button);
     }
-
 
     private void ExecuteTriggerClick() {
       if (xrEventData.triggerPress != null) {
