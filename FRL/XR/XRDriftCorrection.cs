@@ -10,21 +10,21 @@ namespace FRL {
     public Axis axis = Axis.XZ;
     public float correctionSpeed = 0.025f;
     public XRHMD hmd;
-    public Camera camera;
+    public Camera head;
 
     public Transform goal;
     public Vector3 offset;
 
     private void Start() {
       if (!hmd) hmd = GetComponent<XRHMD>();
-      if (!camera) camera = Camera.main;
+      if (!head) head = Camera.main;
     }
 
     // Update is called once per frame
     void Update() {
-      if (!goal || !camera || !hmd) return;
+      if (!goal || !head || !hmd) return;
 
-      Vector3 currentPosition = camera.transform.position;
+      Vector3 currentPosition = head.transform.position;
       Vector3 goalPosition = goal.transform.position + goal.transform.rotation * offset;
       Vector3 diff = goalPosition - currentPosition;
 

@@ -9,15 +9,6 @@ namespace FRL {
   [CustomEditor(typeof(XRManager))]
   public class XRManagerEditor : Editor {
 
-    private Dictionary<string, bool> supportedExternalSDKs = new Dictionary<string, bool>() {
-      { "WAVE", false },
-      { "OVR", false },
-      { "STEAM_VR", false },
-      { "DAYDREAM", false }
-    };
-
-    private bool supportExternalSDKs = false;
-
     private List<InputAxis> xrAxes = new List<InputAxis>() {
       new InputAxis("LThumbstickX","","","","","","",0,0.001f,1,true,false,AxisType.JoystickAxis,1,0),
       new InputAxis("LThumbstickY","","","","","","",0,0.001f,1,true,true,AxisType.JoystickAxis,2,0),
@@ -60,15 +51,15 @@ namespace FRL {
 
       GUILayout.Space(5);
       EditorGUILayout.BeginVertical();
-      supportExternalSDKs = EditorGUILayout.BeginToggleGroup("Support External SDKS: ", supportExternalSDKs);
-      supportedExternalSDKs["WAVE"] = EditorGUILayout.ToggleLeft("Wave [Vive Focus]", supportedExternalSDKs["WAVE"]);
-      supportedExternalSDKs["OVR"] = EditorGUILayout.ToggleLeft("OVR [GearVR and Oculus CV1]", supportedExternalSDKs["OVR"]);
-      supportedExternalSDKs["DAYDREAM"] = EditorGUILayout.ToggleLeft("Daydream [Mirage Solo]", supportedExternalSDKs["DAYDREAM"]);
-      supportedExternalSDKs["STEAM_VR"] = EditorGUILayout.ToggleLeft("SteamVR [Vive Haptics]", supportedExternalSDKs["STEAM_VR"]);
+      script.SupportExternalSDKs = EditorGUILayout.BeginToggleGroup("Support External SDKS: ", script.SupportExternalSDKs);
+      script.SupportedExternalSDKs["WAVE"] = EditorGUILayout.ToggleLeft("Wave [Vive Focus]", script.SupportedExternalSDKs["WAVE"]);
+      script.SupportedExternalSDKs["OVR"] = EditorGUILayout.ToggleLeft("OVR [GearVR and Oculus CV1]", script.SupportedExternalSDKs["OVR"]);
+      script.SupportedExternalSDKs["DAYDREAM"] = EditorGUILayout.ToggleLeft("Daydream [Mirage Solo]", script.SupportedExternalSDKs["DAYDREAM"]);
+      script.SupportedExternalSDKs["STEAM_VR"] = EditorGUILayout.ToggleLeft("SteamVR [Vive Haptics]", script.SupportedExternalSDKs["STEAM_VR"]);
       EditorGUILayout.EndToggleGroup();
       EditorGUILayout.EndVertical();
 
-      UpdateScriptingDefineSymbols();
+      UpdateScriptingDefineSymbols(script.SupportedExternalSDKs);
 
       EditorUtility.SetDirty(script);
     }
@@ -79,7 +70,7 @@ namespace FRL {
       }
     }
 
-    private void UpdateScriptingDefineSymbols() {
+    private void UpdateScriptingDefineSymbols(Dictionary<string, bool> sdks) {
       BuildTargetGroup[] groups = new BuildTargetGroup[] {
           BuildTargetGroup.Standalone, BuildTargetGroup.Android, BuildTargetGroup.WSA
         };
@@ -88,8 +79,8 @@ namespace FRL {
         string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
         List<string> defined = new List<string>(s.Split(';'));
         
-        foreach (var sdk in supportedExternalSDKs.Keys) {
-          if (supportExternalSDKs && supportedExternalSDKs[sdk]) {
+        foreach (var sdk in sdks.Keys) {
+          if (sdks[sdk]) {
             if (!defined.Contains(sdk)) defined.Add(sdk);
           } else if (defined.Contains(sdk)) defined.Remove(sdk);
         }

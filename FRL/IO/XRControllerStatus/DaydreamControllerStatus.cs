@@ -5,36 +5,73 @@ using UnityEngine;
 namespace FRL.IO {
 #if DAYDREAM
   public class DaydreamControllerStatus : XRControllerStatus {
+
+
+    public DaydreamControllerStatus(XRHand hand) : base(hand) {
+      
+    }
+
     public override bool GetClick(XRButton button) {
-      throw new System.NotImplementedException();
+      return GetPressDown(button);
     }
 
     public override bool GetPress(XRButton button) {
-      throw new System.NotImplementedException();
+      switch (button) {
+        case XRButton.Touchpad:
+          return GvrControllerInput.ClickButton;
+        case XRButton.Menu:
+          return GvrControllerInput.AppButton;
+        case XRButton.Home:
+          return GvrControllerInput.HomeButtonState;
+        default:
+          return false;
+      }
     }
 
     public override bool GetPressDown(XRButton button) {
-      throw new System.NotImplementedException();
+      switch (button) {
+        case XRButton.Touchpad:
+          return GvrControllerInput.ClickButtonDown;
+        case XRButton.Menu:
+          return GvrControllerInput.AppButtonDown;
+        case XRButton.Home:
+          return GvrControllerInput.HomeButtonDown;
+        default:
+          return false;
+      }
     }
 
     public override bool GetPressUp(XRButton button) {
-      throw new System.NotImplementedException();
+      switch (button) {
+        case XRButton.Touchpad:
+          return GvrControllerInput.ClickButtonUp;
+        case XRButton.Menu:
+          return GvrControllerInput.AppButtonUp;
+        default:
+          return false;
+      }
     }
 
     public override bool GetTouch(XRButton button) {
-      throw new System.NotImplementedException();
+      if (button == XRButton.Touchpad) return GvrControllerInput.IsTouching;
+      else return false;
     }
 
     public override bool GetTouchDown(XRButton button) {
-      throw new System.NotImplementedException();
+      if (button == XRButton.Touchpad) return GvrControllerInput.TouchDown;
+      else return false;
     }
 
     public override bool GetTouchUp(XRButton button) {
-      throw new System.NotImplementedException();
+      if (button == XRButton.Touchpad) return GvrControllerInput.TouchUp;
+      else return false;
     }
 
     protected override void GenerateCurrentStatus() {
-      throw new System.NotImplementedException();
+      cPos = Camera.main.transform.rotation * (hand == XRHand.Left ? new Vector3(-0.2f, -0.3f, 0.4f) : new Vector3(0.2f, -0.3f, 0.4f));
+      cRot = Camera.main.transform.rotation * GvrControllerInput.Orientation;
+
+      cTouchpadAxis = GvrControllerInput.TouchPos;
     }
   }
 #else

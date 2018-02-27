@@ -8,7 +8,7 @@ namespace FRL.IO {
 
   public enum XRHand { Left, Right, None };
   public enum XRButton {
-    Trigger, Grip, Touchpad, Menu, Thumbstick, A, B, X, Y, Forward, Back, Left, Right
+    Trigger, Grip, Touchpad, Menu, Thumbstick, A, B, X, Y, Forward, Back, Left, Right, Home
   }
 
   public class XREventData : PointerEventData {
