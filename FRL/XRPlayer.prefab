@@ -51,11 +51,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4936814948752928}
   - component: {fileID: 114982850005151158}
-  - component: {fileID: 114630940768624442}
   - component: {fileID: 114055008699339574}
   - component: {fileID: 114650010535985074}
   m_Layer: 0
-  m_Name: XRSystemHMD
+  m_Name: XRHMD
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -572,7 +571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactTag: 
   interactDistance: 10
---- !u!114 &114630940768624442
+--- !u!114 &114650010535985074
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -580,28 +579,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1544157838791602}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84f6a6fe3ef9f3941b23a00a453afae9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 90, y: -180, z: 0}
-  HMD: {fileID: 0}
-  correctRotation: {x: 0, y: 0, z: 0, w: 1}
---- !u!114 &114650010535985074
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1544157838791602}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7ebadf42a38768d488768069a9b4ed8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   axis: 1
   correctionSpeed: 0.01
   hmd: {fileID: 114982850005151158}
-  camera: {fileID: 20016801728441434}
+  head: {fileID: 0}
   goal: {fileID: 0}
   offset: {x: 0, y: 1.15, z: 0}
 --- !u!114 &114699245685905298

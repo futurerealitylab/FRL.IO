@@ -111,11 +111,6 @@ namespace FRL {
 
     void UpdateGearVR() {
       isTracked = true;
-      //if (XRNetworkClient.IsTracked(TrackingLabel)) {
-      //  isTracked = true;
-      //} else {
-      //  isTracked = false;
-      //}
     }
   }
 }

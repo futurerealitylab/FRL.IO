@@ -5,26 +5,25 @@ using UnityEngine;
 namespace FRL {
   public class XRManager : MonoBehaviour {
 
-    private bool supportExternalSDKs = false;
-    private Dictionary<string, bool> supportedExternalSDKs = new Dictionary<string, bool>() {
-      { "WAVE", false },
-      { "OVR", false },
-      { "STEAM_VR", false },
-      { "DAYDREAM", false }
-    };
-
     private static XRManager instance;
-
     public static XRSystem CurrentSystem { get { return instance.System; } }
 
-    public bool SupportExternalSDKs { 
-      get { return supportExternalSDKs; }
-      set { supportExternalSDKs = value; }
-    }
 
-    public Dictionary<string, bool> SupportedExternalSDKs {
-      get { return supportedExternalSDKs; }
-    }
+    private List<string> allSDKs = new List<string>() {
+      "WAVE", "OVR", "STEAM_VR", "DAYDREAM"
+    };
+
+    private List<string> sdkNames = new List<string>() {
+      "Wave [Vive Focus]", "OVR [GearVR and CV1]", "SteamVR [Vive Haptics]", "Daydream [Mirage Solo]"
+    };
+
+    private List<bool> enabledSDKs = new List<bool>() {
+      false, false, false, false
+    };
+
+    public List<string> AllSDKs { get { return allSDKs; } }
+    public List<bool> EnabledSDKs { get { return enabledSDKs; } }
+    public List<string> SDKNames { get { return sdkNames; } }
 
     public bool switchBuildTargetOnChange;
 
@@ -48,12 +47,12 @@ namespace FRL {
 
 #if OVR
       OVRManager ovr;
-      if (ovr = GetComponent<OVRManager>()) {
-        ovr.enabled = (system == XRSystem.CV1 || System == XRSystem.GearVR);
-      } else {
-        Debug.LogError("Please attach an OVRManager to the XRManager Gameobject!");
-        return;
+      if (!(ovr = GetComponent<OVRManager>())) {
+        Debug.Log("Adding OVRManager to XRManager gameObject.");
+        ovr = this.gameObject.AddComponent<OVRManager>();
+        ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
       }
+      ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVR);
 #else
       if (system == XRSystem.CV1 || system == XRSystem.GearVR) {
         Debug.LogError("Cannot switch to " + system + " without OVR SDK!");
@@ -62,16 +61,19 @@ namespace FRL {
 #endif
 
 #if DAYDREAM
-      if (system == XRSystem.Daydream) {
-        if (!GetComponent<GvrControllerInput>()) {
-          Debug.Log("Adding GvrControllerInput component to XRManager gameObject.");
-          gameObject.AddComponent<GvrControllerInput>();
-        }
-        if (!GetComponent<GvrHeadset>()) {
-          Debug.Log("Adding GvrHeadset component to XRManager gameObject.");
-          gameObject.AddComponent<GvrHeadset>();
-        }
+      GvrControllerInput controller;
+      if (!(controller = GetComponent<GvrControllerInput>())) {
+        Debug.Log("Adding GvrControllerInput component to XRManager gameObject.");
+        controller = gameObject.AddComponent<GvrControllerInput>();
       }
+      controller.enabled = system == XRSystem.Daydream;
+
+      GvrHeadset headset;
+      if (!(headset = GetComponent<GvrHeadset>())) {
+        Debug.Log("Adding GvrHeadset component to XRManager gameObject.");
+        headset = gameObject.AddComponent<GvrHeadset>();
+      }
+      headset.enabled = system == XRSystem.Daydream;
 #else
       if (system == XRSystem.Daydream) {
         Debug.LogError("Cannot switch to " + system + " without Daydream SDK!");
@@ -79,12 +81,42 @@ namespace FRL {
       }
 #endif
 
-      Debug.Log("Switching to system: " + system);
-      _system = system;
+#if WAVE
+      Camera cam = GetComponentInChildren<Camera>();
+
+      WaveVR_Render render;
+      if (!(render = cam.GetComponent<WaveVR_Render>())) {
+        Debug.Log("Adding WaveVR_Render to Main Camera gameObject.");
+        render = cam.gameObject.AddComponent<WaveVR_Render>();
+        render.origin = wvr.WVR_PoseOriginModel.WVR_PoseOriginModel_OriginOnGround;
+
+      }
+      render.enabled = system == XRSystem.ViveFocus;
+
+      WaveVR_DevicePoseTracker tracker;
+      if (!(tracker = cam.GetComponent<WaveVR_DevicePoseTracker>())) {
+        Debug.Log("Adding WaveVR_DevicePoseTracker to Main Camera gameObject.");
+        tracker = cam.gameObject.AddComponent<WaveVR_DevicePoseTracker>();
+        tracker.type = wvr.WVR_DeviceType.WVR_DeviceType_HMD;
+        tracker.trackPosition = true;
+        tracker.trackRotation = true;
+        tracker.timing = WaveVR_DevicePoseTracker.TrackingEvent.WhenNewPoses;
+      }
+      tracker.enabled = system == XRSystem.ViveFocus;
+#else
+      if (system == XRSystem.ViveFocus) {
+        Debug.LogError("Cannot switch to " + system + " without Wave SDK!");
+        return;
+      }
+#endif
+
+
       XRDevice[] devices = GetComponentsInChildren<XRDevice>();
       foreach (XRDevice device in devices) {
         device.System = system;
       }
+      _system = system;
+      Debug.Log("Switched to " + system);
     }
 
     void Start() {

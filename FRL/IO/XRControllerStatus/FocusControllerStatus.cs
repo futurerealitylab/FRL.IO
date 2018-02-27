@@ -47,12 +47,9 @@ namespace FRL.IO {
         cPos = Vector3.zero;
         cRot = Quaternion.identity;
       } else {
-        cPos = Camera.main.transform.localPosition + Camera.main.transform.localRotation * device.rigidTransform.pos;
-        if (cPos != Vector3.zero) {
-          Vector3 o = hand == XRHand.Left ? new Vector3(-0.2f, -0.3f, 0.4f) : new Vector3(0.2f, -0.3f, 0.4f);
-          cPos += Camera.main.transform.rotation * o;
-        }
-        cRot = device.rigidTransform.rot;
+        Vector3 o = hand == XRHand.Left ? new Vector3(-0.2f, -0.3f, 0.4f) : new Vector3(0.2f, -0.3f, 0.4f);
+        cPos = Camera.main.transform.localPosition + Camera.main.transform.localRotation * o;
+        cRot = Camera.main.transform.localRotation * device.rigidTransform.rot;
       }
 
       cTriggerAxis = GetPressDown(XRButton.Trigger) ? 1f : 0f;

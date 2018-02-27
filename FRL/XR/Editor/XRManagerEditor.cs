@@ -30,7 +30,7 @@ namespace FRL {
       GUILayout.Space(5);
       XRManager script = (XRManager)target;
       XRSystem system = (XRSystem)EditorGUILayout.EnumPopup("System: ", script.System);
-      bool switchTarget = EditorGUILayout.Toggle(script.switchBuildTargetOnChange, "Switch Build Target On Change: ");
+      bool switchTarget = EditorGUILayout.ToggleLeft("Switch Build Target On Change", script.switchBuildTargetOnChange);
       script.switchBuildTargetOnChange = switchTarget;
 
       if (script.System != system) {
@@ -50,16 +50,12 @@ namespace FRL {
       }
 
       GUILayout.Space(5);
-      EditorGUILayout.BeginVertical();
-      script.SupportExternalSDKs = EditorGUILayout.BeginToggleGroup("Support External SDKS: ", script.SupportExternalSDKs);
-      script.SupportedExternalSDKs["WAVE"] = EditorGUILayout.ToggleLeft("Wave [Vive Focus]", script.SupportedExternalSDKs["WAVE"]);
-      script.SupportedExternalSDKs["OVR"] = EditorGUILayout.ToggleLeft("OVR [GearVR and Oculus CV1]", script.SupportedExternalSDKs["OVR"]);
-      script.SupportedExternalSDKs["DAYDREAM"] = EditorGUILayout.ToggleLeft("Daydream [Mirage Solo]", script.SupportedExternalSDKs["DAYDREAM"]);
-      script.SupportedExternalSDKs["STEAM_VR"] = EditorGUILayout.ToggleLeft("SteamVR [Vive Haptics]", script.SupportedExternalSDKs["STEAM_VR"]);
-      EditorGUILayout.EndToggleGroup();
-      EditorGUILayout.EndVertical();
+      EditorGUILayout.LabelField("Supported External SDKS:", EditorStyles.boldLabel);
+      for (int i = 0; i < script.AllSDKs.Count; i++) {
+        script.EnabledSDKs[i] = EditorGUILayout.ToggleLeft(script.SDKNames[i], script.EnabledSDKs[i]);
+      }
 
-      UpdateScriptingDefineSymbols(script.SupportedExternalSDKs);
+      UpdateScriptingDefineSymbols(script);
 
       EditorUtility.SetDirty(script);
     }
@@ -70,17 +66,19 @@ namespace FRL {
       }
     }
 
-    private void UpdateScriptingDefineSymbols(Dictionary<string, bool> sdks) {
+    private void UpdateScriptingDefineSymbols(XRManager script) {
+
       BuildTargetGroup[] groups = new BuildTargetGroup[] {
-          BuildTargetGroup.Standalone, BuildTargetGroup.Android, BuildTargetGroup.WSA
-        };
+        BuildTargetGroup.Standalone, BuildTargetGroup.Android, BuildTargetGroup.WSA
+      };
 
       foreach (BuildTargetGroup group in groups) {
         string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
         List<string> defined = new List<string>(s.Split(';'));
         
-        foreach (var sdk in sdks.Keys) {
-          if (sdks[sdk]) {
+        for (int i = 0; i < script.AllSDKs.Count; i++) {
+          string sdk = script.AllSDKs[i];
+          if (script.EnabledSDKs[i]) {
             if (!defined.Contains(sdk)) defined.Add(sdk);
           } else if (defined.Contains(sdk)) defined.Remove(sdk);
         }
