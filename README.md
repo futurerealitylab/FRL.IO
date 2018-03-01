@@ -64,6 +64,7 @@ The full set of supported interfaces can be found in the `FRL/IO/Interfaces/Inte
 
 This is an actively developed, open source library. Please feel free to log issues and feedback! It helps us make the library better for you.
 
+## License
 
 Copyright 2018 NYU Future Reality lab
 
