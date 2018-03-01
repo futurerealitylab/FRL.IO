@@ -52,7 +52,7 @@ public class ExampleInput : MonoBehaviour, IPointerTriggerPressDownHandler, IGlo
   }
 
   public void OnGlobalTouchpadTouch(XREventData eventData) {
-    //This will be called whenever any controller touches the touchpad.
+    //This will be called whenever any touchpad is touched.
     Debug.Log("My " + eventData.hand + " hand is touching the Touchpad!");
   }
 }
