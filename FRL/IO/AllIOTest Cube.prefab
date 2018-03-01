@@ -60,6 +60,7 @@ GameObject:
   - component: {fileID: 114176152730887652}
   - component: {fileID: 114558650291368670}
   - component: {fileID: 114718401011250370}
+  - component: {fileID: 114039767888661682}
   m_Layer: 0
   m_Name: AllIOTest Cube
   m_TagString: Untagged
@@ -167,6 +168,17 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &114039767888661682
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1857695385077090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58c9eb970f17b334a9846f2e83c164b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114092374249539334
 MonoBehaviour:
   m_ObjectHideFlags: 1
