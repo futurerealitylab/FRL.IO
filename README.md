@@ -46,11 +46,13 @@ public class ExampleInput : MonoBehaviour, IPointerTriggerPressDownHandler, IGlo
   }
 
   public void OnPointerTriggerPressDown(XREventData eventData) {
+    //This will only be called when the object is being pointed at by a controller.
     Color color = (eventData.hand == XRHand.Left ? Color.blue : Color.red);
     SetColor(color);
   }
 
   public void OnGlobalTouchpadTouch(XREventData eventData) {
+    //This will be called whenever any controller touches the touchpad.
     Debug.Log("My " + eventData.hand + " hand is touching the Touchpad!");
   }
 }
