@@ -58,7 +58,9 @@ public class ExampleInput : MonoBehaviour, IPointerTriggerPressDownHandler, IGlo
 
 The full set of supported interfaces can be found in the `FRL/IO/Interfaces/Interfaces.cs` class.
 
+##For Developers
 
+This is an actively developed, open source library. Please feel free to log issues and feedback! It helps us make the library better for you.
 
 
 Copyright 2018 NYU Future Reality lab
