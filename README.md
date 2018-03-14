@@ -68,6 +68,7 @@ The `XRNetworkClient` is designed to receive data from a `holojam-node` relay. P
 
 Place an `XRTrackedObject.cs` component onto the GameObject you want to track. 
 
+![XRTrackedObject](https://github.com/futurerealitylab/FRL.XR/blob/master/Documentation/XRTrackedObject-doc.png)
 
 
 ## For Developers
