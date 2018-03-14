@@ -1,89 +1,16 @@
 // Smoothing.cs
+// Created by Holojam Inc. on 17.02.17
 
 using UnityEngine;
 
-namespace FRL.Utility {
-
-  public enum SmoothingType {
-    None, Linear, Lerp, Accurate, Adaptive
-  }
-
-  public abstract class Smoother {
-    public abstract Vector3 Smooth(Vector3 target, ref Vector3 last, float delta);
-    public abstract Quaternion Smooth(Quaternion target, ref Quaternion last, float delta);
-
-    public static Smoother GetSmoother(SmoothingType type) {
-      switch (type) {
-        case SmoothingType.Linear:
-          return new LinearSmoother();
-        case SmoothingType.Lerp:
-          return new LerpSmoother();
-        case SmoothingType.Accurate:
-          return new AccurateSmoother();
-        case SmoothingType.Adaptive:
-          return new AdaptiveSmoother();
-        default:
-          return null;
-      }
-    }
-  }
-
-  public class LinearSmoother : Smoother {
-
-    public float posStep = 5f;
-    public float rotStep = 180f;
-    public float jump = 3f;
-
-    public LinearSmoother(float posStep = 5f, float rotStep = 180f, float jump = 3f) {
-      this.posStep = posStep;
-      this.rotStep = rotStep;
-      this.jump = jump;
-    }
-
-    public override Vector3 Smooth(Vector3 target, ref Vector3 last, float delta) {
-      float dist = Vector3.Distance(target, last);
-      //Jump if distance is greater than saved jump.
-      if (dist > this.jump) {
-        return target;
-      }
-
-      return Vector3.MoveTowards(last, target, posStep * delta);
-    }
-
-    public override Quaternion Smooth(Quaternion target, ref Quaternion last, float delta) {
-      return Quaternion.RotateTowards(last, target, rotStep * Time.deltaTime);
-    }
-  }
-
-
-  public class LerpSmoother : Smoother {
-
-    public float posStep = 5f;
-    public float rotStep = 180f;
-    public float jump = 3f;
-
-    public override Vector3 Smooth(Vector3 target, ref Vector3 last, float delta) {
-      float dist = Vector3.Distance(target, last);
-      //Jump if distance is greater than saved jump.
-      if (dist > this.jump) {
-        return target;
-      }
-
-      return Vector3.Lerp(last, target, posStep * delta);
-    }
-
-    public override Quaternion Smooth(Quaternion target, ref Quaternion last, float delta) {
-      return Quaternion.Slerp(last, target, rotStep * Time.deltaTime);
-    }
-  }
-
+namespace Holojam.Utility {
 
   /// <summary>
   /// Position/rotation smoothing class, optimized for low-latency and jitter (noise) reduction.
   /// Useful for environments where accuracy is more important than interpolation.
   /// </summary>
   [System.Serializable]
-  public class AccurateSmoother : Smoother {
+  public class AccurateSmoother {
 
     /// <summary>
     /// @internal
@@ -100,7 +27,7 @@ namespace FRL.Utility {
     /// </summary>
     public float pow;
 
-    public AccurateSmoother(float cap = 0.5f, float pow = 0.5f) {
+    public AccurateSmoother(float cap, float pow) {
       this.cap = cap;
       this.pow = pow;
     }
@@ -112,7 +39,7 @@ namespace FRL.Utility {
     /// <param name="target"></param>
     /// <param name="last"></param>
     /// <returns>A smoothed version of the input.</returns>
-    public override Vector3 Smooth(Vector3 target, ref Vector3 last, float delta) {
+    public Vector3 Smooth(Vector3 target, ref Vector3 last) {
       target = Vector3.Lerp(last, target, Mathf.Pow(
         Mathf.Min(1, (last - target).magnitude / cap), pow
       ));
@@ -127,7 +54,7 @@ namespace FRL.Utility {
     /// <param name="target"></param>
     /// <param name="last"></param>
     /// <returns>A smoothed version of the input.</returns>
-    public override Quaternion Smooth(Quaternion target, ref Quaternion last, float delta) {
+    public Quaternion Smooth(Quaternion target, ref Quaternion last) {
       float difference = .5f * Quaternion.Dot(last, target) + .5f;
       target = Quaternion.Slerp(last, target, Mathf.Pow(
         Mathf.Min(1, difference / cap), pow
@@ -143,7 +70,7 @@ namespace FRL.Utility {
   /// Adaptively applies more or less smoothing based on update rate.
   /// This has been pre-tuned for general use.
   /// </summary>
-  public class AdaptiveSmoother : Smoother {
+  public class AdaptiveSmoother {
 
     /// <summary>
     /// @internal
@@ -198,7 +125,7 @@ namespace FRL.Utility {
     /// <param name="last"></param>
     /// <param name="delta"></param>
     /// <returns>A smoothed version of the input.</returns>
-    public override Vector3 Smooth(Vector3 target, ref Vector3 last, float delta) {
+    public Vector3 Smooth(Vector3 target, ref Vector3 last, float delta) {
       if (delta > TIMEOUT / 1000f || Vector3.Distance(target, last) > DISTANCE_CAP) {
         last = target;
         return target;
@@ -222,7 +149,7 @@ namespace FRL.Utility {
     /// <param name="last"></param>
     /// <param name="delta"></param>
     /// <returns>A smoothed version of the input.</returns>
-    public override Quaternion Smooth(Quaternion target, ref Quaternion last, float delta) {
+    public Quaternion Smooth(Quaternion target, ref Quaternion last, float delta) {
       if (delta > TIMEOUT / 1000f || Quaternion.Dot(target, last) < DOT_MIN) {
         last = target;
         return target;
