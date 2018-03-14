@@ -70,6 +70,7 @@ Place an `XRTrackedObject.cs` component onto the GameObject you want to track.
 
 ![XRTrackedObject](https://github.com/futurerealitylab/FRL.XR/blob/master/Documentation/XRTrackedObject-doc.png)
 
+If you want to perform sensor fusion with the tracked device (such as a mobile device or headset), toggle `IMUSensorFusion` to `true` and make sure the `cameraTransform` field is populated.
 
 ## For Developers
 
