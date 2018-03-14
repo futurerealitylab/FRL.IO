@@ -1,5 +1,5 @@
-# InputSystems
-The unified IO Library for XR systems in Unity.
+# FRL.XR
+The unified FRL library for XR systems in Unity.
 
 ## Install
 Either download and unpack the .zip, or clone this repo directly into the `Assets` folder of your Unity project.
@@ -8,7 +8,7 @@ cd ./Assets/
 git clone https://github.com/futurerealitylab/FRL.XR.git
 ```
 
-## How to Use
+## XRManager and IO: How to use
 Drag the `XRManager` prefab into your scene. Then, look at the `XRManager` Component:
 
 ![XRManager](https://github.com/futurerealitylab/FRL.XR/blob/master/Documentation/XRManager.PNG)
@@ -17,13 +17,13 @@ There are four supported SDKs: `Wave`, `OVR`, `SteamVR`, and `Daydream`. `Window
 
 If you have custom models for your controllers, you can put them under the `XRController` GameObjects found under `XRManager`.
 
-## Receiving Input On GameObjects: Pointer vs. Global
+### Receiving Input On GameObjects: Pointer vs. Global
 
 In order for a GameObject to receive input when it is being pointed at, it needs a component which implements one of the `Pointer` interfaces, and a `Collider` component. 
 
 In order for a GameObject to receive input globally (whenever any button is pressed), it needs a `Receiver` component and a component which implements one of the `Global` interfaces. If the `module` field of the `Receiver` component is populated with one of the `XRControllerModule` or `HMDModule` components found on the `XRHMD` and `XRController` GameObjects, that GameObject will only receive global input from that specific module. Otherwise, the GameObject will receive input from __all__ input modules.
 
-## Interfaces and Button -> Function Call
+### Interfaces and Button -> Function Call
 
 Here is an example implementation of a GameObject receiving global and pointer inputs.
 
@@ -59,6 +59,16 @@ public class ExampleInput : MonoBehaviour, IPointerTriggerPressDownHandler, IGlo
 ```
 
 The full set of supported interfaces can be found in the `FRL/IO/Interfaces/Interfaces.cs` class.
+
+## XRNetworkClient: How to use
+
+The `XRNetworkClient` is designed to receive data from a `holojam-node` relay. Place the `XRNetworkClient.cs` component onto a GameObject, and make sure the multicast address and the port match your `holojam-node` address and port.
+
+### Getting a Tracked Object
+
+Place an `XRTrackedObject.cs` component onto the GameObject you want to track. 
+
+
 
 ## For Developers
 
