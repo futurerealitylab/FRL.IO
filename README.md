@@ -1,5 +1,5 @@
 # FRL.XR
-The unified FRL library for XR systems in Unity.
+The unified Future Reality Lab library for XR systems in Unity.
 
 ## Install
 Either download and unpack the .zip, or clone this repo directly into the `Assets` folder of your Unity project.
