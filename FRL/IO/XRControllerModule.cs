@@ -65,6 +65,8 @@ namespace FRL.IO {
       }
     }
 
+    public bool updateTracking = true;
+
     private float previousTriggerAxis, previousGripAxis;
     private Vector2 previousTouchpadAxis, previousThumbstickAxis;
 
@@ -84,10 +86,7 @@ namespace FRL.IO {
     }
 
     private XRControllerStatus status;
-    private XREventData eventData;
-    public XREventData xrEventData {
-      get { return eventData; }
-    }
+    public XREventData xrEventData { get; private set; }
 
     private bool isTracked = true;
     public bool IsTracked {
@@ -100,7 +99,7 @@ namespace FRL.IO {
 
     protected override void Awake() {
       base.Awake();
-      eventData = new XREventData(this);
+      xrEventData = new XREventData(this);
       status = GetControllerStatus();
     }
 
@@ -151,7 +150,7 @@ namespace FRL.IO {
       status.Generate();
 
       this.isTracked = status.IsTracked;
-      if (this.IsTracked) {
+      if (this.IsTracked && updateTracking) {
         this.transform.localPosition = status.Position;
         this.transform.localRotation = status.Rotation;
       }

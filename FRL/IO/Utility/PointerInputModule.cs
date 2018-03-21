@@ -69,7 +69,7 @@ namespace FRL.IO {
         pointerEventData.SetCurrentRaycast(null, Vector3.zero, Vector3.zero);
       } else {
         pointerEventData.SetCurrentRaycast(
-          minHit.transform.gameObject, minHit.normal, minHit.point);
+          minHit.collider.gameObject, minHit.normal, minHit.point);
       }
     }
 
