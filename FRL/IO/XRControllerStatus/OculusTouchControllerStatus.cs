@@ -43,6 +43,28 @@ namespace FRL.IO {
       this.pressMappings = hand == XRHand.Left ? leftPressMappings : rightPressMappings;
     }
 
+
+    public override void HapticPulse(AnimationCurve curve, float time) {
+      int count = (int)(time * 320); //Touch controllers sample at 320Hz.
+      OVRHapticsClip clip = new OVRHapticsClip(count);
+   
+      for (int i = 0; i < count; i++) {
+        float value = curve.Evaluate(i / (float)count) * 255f;
+        value = Mathf.Clamp(value, 0, 255);
+        clip.Samples[i] = (byte)(int)value;
+      }
+
+      clip = new OVRHapticsClip(clip.Samples, clip.Samples.Length);
+      OVRHaptics.OVRHapticsChannel channel = hand == XRHand.Left ? OVRHaptics.LeftChannel : OVRHaptics.RightChannel;
+      channel.Mix(clip);
+    }
+
+    public override void HapticPulse(byte[] samples) {
+      OVRHapticsClip clip = new OVRHapticsClip(samples, samples.Length);
+      OVRHaptics.OVRHapticsChannel channel = hand == XRHand.Left ? OVRHaptics.LeftChannel : OVRHaptics.RightChannel;
+      channel.Mix(clip);
+    }
+
     protected override void GenerateCurrentStatus() {
       //Position and Rotation
       cPos = InputTracking.GetLocalPosition(node);

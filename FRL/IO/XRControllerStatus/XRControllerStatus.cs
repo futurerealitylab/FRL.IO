@@ -56,6 +56,17 @@ namespace FRL.IO {
       cAcc = (cVel - pVel) / Time.deltaTime;
     }
 
+    public virtual void HapticPulse(AnimationCurve curve, float time) {
+      return;
+    }
+
+    /// <summary>
+    /// These samples will be played at whatever Hz the controller supports.
+    /// </summary>
+    public virtual void HapticPulse(byte[] samples) {
+      return;
+    }
+
     public abstract bool GetClick(XRButton button);
     public abstract bool GetPressDown(XRButton button);
     public abstract bool GetPress(XRButton button);

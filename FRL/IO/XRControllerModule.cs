@@ -215,6 +215,22 @@ namespace FRL.IO {
       return status.GripAxis;
     }
 
+    public void HapticPulse(float strength, float time) {
+      Mathf.Clamp01(strength);
+      Keyframe start = new Keyframe(0f, strength);
+      Keyframe end = new Keyframe(1f, strength);
+      AnimationCurve curve = new AnimationCurve(new Keyframe[2] { start, end });
+      HapticPulse(curve, time);
+    }
+
+    public void HapticPulse(AnimationCurve curve, float time) {
+      status.HapticPulse(curve, time);
+    }
+
+    public void HapticPulse(byte[] samples) {
+      status.HapticPulse(samples);
+    }
+
     protected bool GetClick(XRButton button) {
       return status.GetClick(button);
     }
