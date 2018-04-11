@@ -21,10 +21,10 @@ There are four supported SDKs: `Wave`, `OVR`, `SteamVR`, and `Daydream`. `Window
 ## Temporary Hotfix: 
 Please add the following pre-compiler definitions to your project depending on which platform(s) you are developing for:
 
-`WaveVR` : `WAVE`
-`OVR`  : `OVR`
-`SteamVR` : `STEAM_VR`
-`Daydream` : `DAYDREAM`
+WaveVR: `WAVE`
+OVR: `OVR`
+SteamVR: `STEAM_VR`
+Daydream: `DAYDREAM`
 
 
 If you have custom models for your controllers, you can put them under the `XRController` GameObjects found under `XRManager`.
