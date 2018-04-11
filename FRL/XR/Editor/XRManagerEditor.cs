@@ -55,7 +55,7 @@ namespace FRL {
         script.EnabledSDKs[i] = EditorGUILayout.ToggleLeft(script.SDKNames[i], script.EnabledSDKs[i]);
       }
 
-      UpdateScriptingDefineSymbols(script);
+      //UpdateScriptingDefineSymbols(script);
 
       EditorUtility.SetDirty(script);
     }
