@@ -9,11 +9,23 @@ git clone https://github.com/futurerealitylab/FRL.XR.git
 ```
 
 ## XRManager and IO: How to use
+
+PLEASE SEE TEMPORARY HOTFIX BELOW.
+
 Drag the `XRManager` prefab into your scene. Then, look at the `XRManager` Component:
 
 ![XRManager](https://github.com/futurerealitylab/FRL.XR/blob/master/Documentation/XRManager.PNG)
 
 There are four supported SDKs: `Wave`, `OVR`, `SteamVR`, and `Daydream`. `Windows Mixed Reality` is technically supported without an SDK, but requires Windows 10 Fall Creators edition. Select the SDKs you plan on using. There will be compilation errors if you select an SDK and don't have it installed in your Unity project. Once you've selected the SDKs, change the `System` field to match the system you want to use.
+
+## Temporary Hotfix: 
+Please add the following pre-compiler definitions to your project depending on which platform(s) you are developing for:
+
+`WaveVR` : `WAVE`
+`OVR`  : `OVR`
+`SteamVR` : `STEAM_VR`
+`Daydream` : `DAYDREAM`
+
 
 If you have custom models for your controllers, you can put them under the `XRController` GameObjects found under `XRManager`.
 
