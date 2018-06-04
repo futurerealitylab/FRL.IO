@@ -85,22 +85,22 @@ namespace FRL.Network {
     }
 
     public static Vector3 GetVector3(string label, int index) {
-      if (!IsTracked(label) || Chunk.lookup[label].data.vector3s.Length > (index + 1)) return Vector3.zero;
+      if (!IsTracked(label) || Chunk.lookup[label].data.vector3s.Length < (index + 1)) return Vector3.zero;
       return Chunk.lookup[label].data.vector3s[index];
     }
 
     public static Quaternion GetQuaternion(string label, int index) {
-      if (!IsTracked(label) || Chunk.lookup[label].data.vector4s.Length > (index + 1)) return Quaternion.identity;
+      if (!IsTracked(label) || Chunk.lookup[label].data.vector4s.Length < (index + 1)) return Quaternion.identity;
       return Chunk.lookup[label].data.vector4s[index];
     }
 
     public static int GetInt(string label, int index) {
-      if (!IsTracked(label) || Chunk.lookup[label].data.ints.Length > (index + 1)) return 0;
+      if (!IsTracked(label) || Chunk.lookup[label].data.ints.Length < (index + 1)) return 0;
       return Chunk.lookup[label].data.ints[index];
     }
 
     public static float GetFloat(string label, int index) {
-      if (!IsTracked(label) || Chunk.lookup[label].data.floats.Length > (index + 1)) return 0;
+      if (!IsTracked(label) || Chunk.lookup[label].data.floats.Length < (index + 1)) return 0;
       return Chunk.lookup[label].data.floats[index];
     }
 
