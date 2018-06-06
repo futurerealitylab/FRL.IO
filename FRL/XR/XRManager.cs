@@ -53,6 +53,18 @@ namespace FRL {
         ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
       }
       ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVR);
+      //if (system == XRSystem.GearVR) {
+      //  IO.XRControllerModule[] controllers = gameObject.GetComponentsInChildren<IO.XRControllerModule>();
+      //  //add GVR controllers
+      //  foreach(var controller in controllers) {
+      //    //only add if none there already
+      //    if (controller.GetComponentsInChildren<OVRTrackedRemote>().Length == 0) {
+      //      OVRTrackedRemote remote = controller.gameObject.AddComponent<OVRTrackedRemote>();
+      //      if (controller.hand == IO.XRHand.Left) remote.m_controller = OVRInput.Controller.LTrackedRemote;
+      //      else remote.m_controller = OVRInput.Controller.RTrackedRemote;
+      //    }
+      //  }
+      //}
 #else
       if (system == XRSystem.CV1 || system == XRSystem.GearVR) {
         Debug.LogError("Cannot switch to " + system + " without OVR SDK!");

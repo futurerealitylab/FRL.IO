@@ -14,7 +14,11 @@ public class ControllerDebug : MonoBehaviour {
     string status = "";
     foreach (XRControllerModule module in modules) {
       status += module.hand.ToString() + ":\t\t";
-      status += module.IsTracked ? "Tracked\t" : "Untracked\t";
+      if (module.System == XRSystem.GearVR) {
+        status += "Remote";
+      } else {
+        status += module.IsTracked ? "Tracked\t" : "Untracked\t";
+      }
       status += module.transform.localPosition.ToString() + "\t";
       status += module.transform.localRotation.ToString();
       status += "\n";
