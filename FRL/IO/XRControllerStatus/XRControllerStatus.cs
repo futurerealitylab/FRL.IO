@@ -76,6 +76,24 @@ namespace FRL.IO {
     public abstract bool GetTouchUp(XRButton button);
 
     protected abstract void GenerateCurrentStatus();
+
+    public override string ToString() {
+      string s = "";
+
+      s += "Controller: " + System.Enum.GetName(typeof(XRHand), hand) + "\n";
+      s += "\tIs Tracked: " + IsTracked.ToString() + "\n";
+      s += "\tPosition: " + Position.ToString() + "\n";
+      s += "\tRotation: " + Rotation.ToString() + "\n";
+      s += "\tVelocity: " + Velocity.ToString() + "\n";
+      s += "\tAcceleration: " + Acceleration.ToString() + "\n";
+      s += "\tGripAxis: " + GripAxis.ToString() + "\n";
+      s += "\tTriggerAxis: " + TriggerAxis.ToString() + "\n";
+      s += "\tThumbstickAxis: " + ThumbstickAxis.ToString() + "\n";
+      s += "\tTouchpadAxis: " + TouchpadAxis.ToString() + "\n";
+
+      return s;
+    }
   }
+
 }
 

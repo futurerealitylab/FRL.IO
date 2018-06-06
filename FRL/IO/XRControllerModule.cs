@@ -136,7 +136,9 @@ namespace FRL.IO {
         case XRSystem.Daydream:
           return new DaydreamControllerStatus(this.hand);
         case XRSystem.WindowsMR:
-          return new WMRControllerStatus(this.hand);
+          WMRControllerStatus status = new WMRControllerStatus(this.hand);
+          Debug.Log(status.ToString());
+          return status;
         case XRSystem.GearVR:
           return new GVRControllerStatus(this.hand);
         case XRSystem.Standalone:
@@ -253,10 +255,13 @@ namespace FRL.IO {
           x.OnPointerGripClick(xrEventData);
         });
       }
-      foreach (Receiver r in pressReceivers[XRButton.Grip])
+      Debug.Log(pressReceivers[XRButton.Grip]);
+      foreach (Receiver r in pressReceivers[XRButton.Grip]) {
+        //Debug.Log(r.ToString());
         if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
           ExecuteEvents.Execute<IGlobalGripClickHandler>(r.gameObject, xrEventData,
             (x, y) => x.OnGlobalGripClick(xrEventData));
+      }
     }
 
     private void ExecutePressDown(XRButton id) {
