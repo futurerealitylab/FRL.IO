@@ -10,7 +10,10 @@ namespace FRL.IO {
 
     public override bool IsTracked {
       get {
-        return (controller != default(OVRInput.Controller) && OVRInput.GetActiveController() == controller);
+        return (controller != default(OVRInput.Controller) && OVRInput.GetActiveController() == controller
+          //check handedness
+          //&& System.Enum.GetName(typeof(XRHand), hand)[0] == System.Enum.GetName(typeof(OVRInput.Controller), controller)[0]
+          );
       }
     }
 
@@ -24,9 +27,6 @@ namespace FRL.IO {
       //The current documentation for these functions is wrong--they DO work for tracked remotes 
       controller = OVRInput.GetActiveController();
       cPos = Camera.main.transform.localPosition + OVRInput.GetLocalControllerPosition(controller);
-      //cPos = Vector3.zero;
-      //cPos = Camera.main.transform.position + new Vector3(0f, 0f, .5f);
-      //cPos = OVRInput.GetLocalControllerPosition(controller);
       cRot = OVRInput.GetLocalControllerRotation(controller);
 
       //Axes
@@ -34,10 +34,12 @@ namespace FRL.IO {
       cTouchpadAxis = OVRInput.Get(OVRInput.Axis2D.PrimaryTouchpad);
       cTriggerAxis = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger);
       cGripAxis = 0f;
+
     }
 
     public override bool GetClick(XRButton button) {
-      throw new System.NotImplementedException();
+      return GetPressUp(button);
+      //return false;
     }
 
     public override bool GetPress(XRButton button) {
@@ -45,7 +47,7 @@ namespace FRL.IO {
         case XRButton.Trigger:
           return OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger);
         case XRButton.Menu:
-          return OVRInput.Get(OVRInput.Button.Two);
+          return OVRInput.Get(OVRInput.Button.Back);
         case XRButton.Touchpad:
           return OVRInput.Get(OVRInput.Button.PrimaryTouchpad);
         default:
