@@ -14,7 +14,7 @@ namespace FRL {
     };
 
     private List<string> sdkNames = new List<string>() {
-      "Wave [Vive Focus]", "OVR [GearVR and CV1]", "SteamVR [Vive Haptics]", "Daydream [Mirage Solo]"
+      "Wave [Vive Focus]", "OVR [GearVR/Oculus Go and CV1]", "SteamVR [Vive Haptics]", "Daydream [Mirage Solo]"
     };
 
     private List<bool> enabledSDKs = new List<bool>() {
@@ -50,21 +50,19 @@ namespace FRL {
       if (!(ovr = GetComponent<OVRManager>())) {
         Debug.Log("Adding OVRManager to XRManager gameObject.");
         ovr = this.gameObject.AddComponent<OVRManager>();
-        ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
+        ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;       
       }
-      ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVR);
-      //if (system == XRSystem.GearVR) {
-      //  IO.XRControllerModule[] controllers = gameObject.GetComponentsInChildren<IO.XRControllerModule>();
-      //  //add GVR controllers
-      //  foreach(var controller in controllers) {
-      //    //only add if none there already
-      //    if (controller.GetComponentsInChildren<OVRTrackedRemote>().Length == 0) {
-      //      OVRTrackedRemote remote = controller.gameObject.AddComponent<OVRTrackedRemote>();
-      //      if (controller.hand == IO.XRHand.Left) remote.m_controller = OVRInput.Controller.LTrackedRemote;
-      //      else remote.m_controller = OVRInput.Controller.RTrackedRemote;
-      //    }
-      //  }
-      //}
+      if (system == XRSystem.GearVROculusGo) {
+        //OVRManager.display.RecenterPose();
+        //reposition hands -- OVR positions them correctly
+        //XRController[] controllers = GetComponentsInChildren<XRController>();
+        //XRHMD hmd = GetComponentInChildren<XRHMD>();
+        //foreach (var controller in controllers) {
+        //  controller.transform.localPosition = hmd.transform.localPosition;
+        //  Debug.Log(controller.transform.localPosition.ToString());
+        //}
+      }
+      ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVROculusGo);
 #else
       if (system == XRSystem.CV1 || system == XRSystem.GearVR) {
         Debug.LogError("Cannot switch to " + system + " without OVR SDK!");

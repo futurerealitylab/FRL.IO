@@ -521,6 +521,7 @@ MonoBehaviour:
   interactTag: 
   interactDistance: 10
   hand: 1
+  updateTracking: 1
 --- !u!114 &114363956708187140
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -602,6 +603,7 @@ MonoBehaviour:
   interactTag: 
   interactDistance: 10
   hand: 0
+  updateTracking: 1
 --- !u!114 &114810220988355272
 MonoBehaviour:
   m_ObjectHideFlags: 1

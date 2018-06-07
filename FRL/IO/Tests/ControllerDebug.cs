@@ -14,7 +14,7 @@ public class ControllerDebug : MonoBehaviour {
     string status = "";
     foreach (XRControllerModule module in modules) {
       status += module.hand.ToString() + ":\t\t";
-      if (module.System == XRSystem.GearVR) {
+      if (module.System == XRSystem.GearVROculusGo) {
         status += "Remote";
       } else {
         status += module.IsTracked ? "Tracked\t" : "Untracked\t";

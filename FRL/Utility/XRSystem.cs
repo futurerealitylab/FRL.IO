@@ -5,5 +5,5 @@
 #define GEARVR
 
 public enum XRSystem {
-  Standalone, CV1, GearVR, ViveFocus, WindowsMR, Vive, Daydream
+  Standalone, CV1, GearVROculusGo, ViveFocus, WindowsMR, Vive, Daydream
 }

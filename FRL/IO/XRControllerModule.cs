@@ -137,7 +137,7 @@ namespace FRL.IO {
           return new DaydreamControllerStatus(this.hand);
         case XRSystem.WindowsMR:
           return new WMRControllerStatus(this.hand);
-        case XRSystem.GearVR:
+        case XRSystem.GearVROculusGo:
           return new GVRControllerStatus(this.hand);
         case XRSystem.Standalone:
           return new StandaloneControllerStatus();

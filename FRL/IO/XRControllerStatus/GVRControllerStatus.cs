@@ -16,13 +16,17 @@ namespace FRL.IO {
 
     public GVRControllerStatus(XRHand hand) : base(hand) {
       if (hand == XRHand.Right) return; // why??
-      controller = OVRInput.GetActiveController();
+      //controller = OVRInput.GetActiveController();
     }
 
     protected override void GenerateCurrentStatus() {
       //Position and Rotation
       //The current documentation for these functions is wrong--they DO work for tracked remotes 
+      controller = OVRInput.GetActiveController();
       cPos = Camera.main.transform.localPosition + OVRInput.GetLocalControllerPosition(controller);
+      //cPos = Vector3.zero;
+      //cPos = Camera.main.transform.position + new Vector3(0f, 0f, .5f);
+      //cPos = OVRInput.GetLocalControllerPosition(controller);
       cRot = OVRInput.GetLocalControllerRotation(controller);
 
       //Axes
@@ -41,7 +45,7 @@ namespace FRL.IO {
         case XRButton.Trigger:
           return OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger);
         case XRButton.Menu:
-          return OVRInput.Get(OVRInput.Button.Back);
+          return OVRInput.Get(OVRInput.Button.Two);
         case XRButton.Touchpad:
           return OVRInput.Get(OVRInput.Button.PrimaryTouchpad);
         default:
