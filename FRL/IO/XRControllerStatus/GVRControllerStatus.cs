@@ -7,7 +7,7 @@ namespace FRL.IO {
   public class GVRControllerStatus : XRControllerStatus {
 
     private OVRInput.Controller controller;
-
+    
     public override bool IsTracked {
       get {
         return (controller != default(OVRInput.Controller) && OVRInput.GetActiveController() == controller
@@ -26,6 +26,7 @@ namespace FRL.IO {
       //Position and Rotation
       //The current documentation for these functions is wrong--they DO work for tracked remotes 
       controller = OVRInput.GetActiveController();
+
       cPos = Camera.main.transform.localPosition + OVRInput.GetLocalControllerPosition(controller);
       cRot = OVRInput.GetLocalControllerRotation(controller);
 
@@ -39,7 +40,6 @@ namespace FRL.IO {
 
     public override bool GetClick(XRButton button) {
       return GetPressUp(button);
-      //return false;
     }
 
     public override bool GetPress(XRButton button) {
@@ -95,6 +95,7 @@ namespace FRL.IO {
       if (button == XRButton.Touchpad) return OVRInput.GetUp(OVRInput.Touch.PrimaryTouchpad);
       else return false;
     }
+    
   }
 #else
   public class GVRControllerStatus : BrokenControllerStatus {

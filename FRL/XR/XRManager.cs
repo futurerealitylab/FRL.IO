@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace FRL {
   public class XRManager : MonoBehaviour {
@@ -51,16 +52,6 @@ namespace FRL {
         Debug.Log("Adding OVRManager to XRManager gameObject.");
         ovr = this.gameObject.AddComponent<OVRManager>();
         ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;       
-      }
-      if (system == XRSystem.GearVROculusGo) {
-        //OVRManager.display.RecenterPose();
-        //reposition hands -- OVR positions them correctly
-        //XRController[] controllers = GetComponentsInChildren<XRController>();
-        //XRHMD hmd = GetComponentInChildren<XRHMD>();
-        //foreach (var controller in controllers) {
-        //  controller.transform.localPosition = hmd.transform.localPosition;
-        //  Debug.Log(controller.transform.localPosition.ToString());
-        //}
       }
       ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVROculusGo);
 #else

@@ -103,7 +103,7 @@ namespace FRL.IO {
       status = GetControllerStatus();
     }
 
-    protected virtual void OnEnable() {
+    protected virtual void OnEnable() {  
       _modules.Add(this);
       foreach (XRButton button in XRButtons) {
         pressPairings.Add(button, null);
