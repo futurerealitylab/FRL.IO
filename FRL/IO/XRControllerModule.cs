@@ -253,10 +253,11 @@ namespace FRL.IO {
           x.OnPointerGripClick(xrEventData);
         });
       }
-      foreach (Receiver r in pressReceivers[XRButton.Grip])
+      foreach (Receiver r in pressReceivers[XRButton.Grip]) {
         if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
           ExecuteEvents.Execute<IGlobalGripClickHandler>(r.gameObject, xrEventData,
             (x, y) => x.OnGlobalGripClick(xrEventData));
+      }
     }
 
     private void ExecutePressDown(XRButton id) {
