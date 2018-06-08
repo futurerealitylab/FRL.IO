@@ -10,16 +10,12 @@ namespace FRL.IO {
     
     public override bool IsTracked {
       get {
-        return (controller != default(OVRInput.Controller) && OVRInput.GetActiveController() == controller
-          //check handedness
-          //&& System.Enum.GetName(typeof(XRHand), hand)[0] == System.Enum.GetName(typeof(OVRInput.Controller), controller)[0]
-          );
+        return (controller != default(OVRInput.Controller) && OVRInput.GetActiveController() == controller);
       }
     }
 
     public GVRControllerStatus(XRHand hand) : base(hand) {
-      if (hand == XRHand.Right) return; // why??
-      //controller = OVRInput.GetActiveController();
+
     }
 
     protected override void GenerateCurrentStatus() {
@@ -35,7 +31,6 @@ namespace FRL.IO {
       cTouchpadAxis = OVRInput.Get(OVRInput.Axis2D.PrimaryTouchpad);
       cTriggerAxis = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger);
       cGripAxis = 0f;
-
     }
 
     public override bool GetClick(XRButton button) {
