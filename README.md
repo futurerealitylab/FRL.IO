@@ -12,7 +12,7 @@ git clone https://github.com/futurerealitylab/FRL.XR.git
 
 PLEASE SEE TEMPORARY HOTFIX BELOW.
 
-Drag the `XRManager` prefab into your scene. Then, look at the `XRManager` Component:
+Drag the `XRPlayer` prefab into your scene. Then, look at the `XRManager` Component:
 
 ![XRManager](https://github.com/futurerealitylab/FRL.XR/blob/master/Documentation/XRManager.PNG)
 
