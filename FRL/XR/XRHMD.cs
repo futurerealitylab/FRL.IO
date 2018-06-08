@@ -51,7 +51,7 @@ namespace FRL {
       if (system == XRSystem.Standalone && standaloneCameraGoal) {
         this.transform.localPosition = standaloneCameraGoal.localPosition;
         this.transform.localRotation = standaloneCameraGoal.localRotation;
-      } else if (System == XRSystem.GearVR && gearVRCameraGoal) {
+      } else if (System == XRSystem.GearVROculusGo && gearVRCameraGoal) {
         this.transform.localPosition = gearVRCameraGoal.localPosition;
         this.transform.localRotation = gearVRCameraGoal.localRotation;
       } else {
@@ -89,7 +89,7 @@ namespace FRL {
         case XRSystem.CV1:
           UpdateCV1();
           break;
-        case XRSystem.GearVR:
+        case XRSystem.GearVROculusGo:
           UpdateGearVR();
           break;
       }

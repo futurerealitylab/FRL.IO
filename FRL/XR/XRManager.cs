@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace FRL {
   public class XRManager : MonoBehaviour {
@@ -14,7 +15,7 @@ namespace FRL {
     };
 
     private List<string> sdkNames = new List<string>() {
-      "Wave [Vive Focus]", "OVR [GearVR and CV1]", "SteamVR [Vive Haptics]", "Daydream [Mirage Solo]"
+      "Wave [Vive Focus]", "OVR [GearVR/Oculus Go and CV1]", "SteamVR [Vive Haptics]", "Daydream [Mirage Solo]"
     };
 
     private List<bool> enabledSDKs = new List<bool>() {
@@ -52,7 +53,7 @@ namespace FRL {
         ovr = this.gameObject.AddComponent<OVRManager>();
         ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
       }
-      ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVR);
+      ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVROculusGo);
 #else
       if (system == XRSystem.CV1 || system == XRSystem.GearVR) {
         Debug.LogError("Cannot switch to " + system + " without OVR SDK!");

@@ -15,14 +15,17 @@ namespace FRL.IO {
     }
 
     public GVRControllerStatus(XRHand hand) : base(hand) {
-      if (hand == XRHand.Right) return;
-      controller = OVRInput.GetActiveController();
+
     }
 
     protected override void GenerateCurrentStatus() {
       //Position and Rotation
+      //The current documentation for these functions is wrong--they DO work for tracked remotes 
+      controller = OVRInput.GetActiveController();
+
       cPos = Camera.main.transform.localPosition + OVRInput.GetLocalControllerPosition(controller);
       cRot = OVRInput.GetLocalControllerRotation(controller);
+
       //Axes
       cThumbstickAxis = Vector2.zero;
       cTouchpadAxis = OVRInput.Get(OVRInput.Axis2D.PrimaryTouchpad);
@@ -31,7 +34,8 @@ namespace FRL.IO {
     }
 
     public override bool GetClick(XRButton button) {
-      throw new System.NotImplementedException();
+      //GetPressDown would make more sense here, but broke trigger input for some reason
+      return GetPressUp(button);
     }
 
     public override bool GetPress(XRButton button) {

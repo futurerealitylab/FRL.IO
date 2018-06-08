@@ -99,7 +99,7 @@ namespace FRL {
         case XRSystem.WindowsMR:
           EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WSA, BuildTarget.WSAPlayer);
           break;
-        case XRSystem.GearVR:
+        case XRSystem.GearVROculusGo:
           EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
           break;
       }

@@ -32,8 +32,30 @@ namespace FRL {
 
     protected override void OnSystemSwitch(XRSystem system) {
       XRControllerModule module = GetComponent<XRControllerModule>();
-      if (module) module.System = system;
+      if (module) {
+        module.System = system;
+
+        //if GVR/Go, disable all modules that don't track this hand
+        if (System == XRSystem.GearVROculusGo && Controllers.Count > 1) {
+          GVRVerifyController(module);
+        }
+      }
     }
+
+    private void GVRVerifyController(XRControllerModule module) {
+#if OVR
+      OVRInput.Controller controller = OVRInput.GetActiveController();
+      CheckGVRController.Text += module.hand + " | " + controller + "\n";
+      if (controller == OVRInput.Controller.None ||
+         (module.hand == XRHand.Left && controller == OVRInput.Controller.RTrackedRemote) ||
+         (module.hand == XRHand.Right && controller == OVRInput.Controller.LTrackedRemote)) {
+        Debug.Log("Removing " + gameObject.name);
+        gameObject.SetActive(false);
+        this.enabled = false;
+        module.enabled = false;
+      }
+#endif
+      }
   }
 }
 

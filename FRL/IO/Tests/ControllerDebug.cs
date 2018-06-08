@@ -13,8 +13,17 @@ public class ControllerDebug : MonoBehaviour {
 	void Update () {
     string status = "";
     foreach (XRControllerModule module in modules) {
+      if (!module.gameObject.activeInHierarchy) {
+        modules.Remove(module);
+        break;
+      }
+
       status += module.hand.ToString() + ":\t\t";
-      status += module.IsTracked ? "Tracked\t" : "Untracked\t";
+      if (module.System == XRSystem.GearVROculusGo) {
+        status += "Remote";
+      } else {
+        status += module.IsTracked ? "Tracked\t" : "Untracked\t";
+      }
       status += module.transform.localPosition.ToString() + "\t";
       status += module.transform.localRotation.ToString();
       status += "\n";
