@@ -45,6 +45,7 @@ namespace FRL.IO {
 
 
     public override void HapticPulse(AnimationCurve curve, float time) {
+#if OVR
       int count = (int)(time * 320); //Touch controllers sample at 320Hz.
       OVRHapticsClip clip = new OVRHapticsClip(count);
    
@@ -57,12 +58,15 @@ namespace FRL.IO {
       clip = new OVRHapticsClip(clip.Samples, clip.Samples.Length);
       OVRHaptics.OVRHapticsChannel channel = hand == XRHand.Left ? OVRHaptics.LeftChannel : OVRHaptics.RightChannel;
       channel.Mix(clip);
+#endif
     }
 
     public override void HapticPulse(byte[] samples) {
+#if OVR
       OVRHapticsClip clip = new OVRHapticsClip(samples, samples.Length);
       OVRHaptics.OVRHapticsChannel channel = hand == XRHand.Left ? OVRHaptics.LeftChannel : OVRHaptics.RightChannel;
       channel.Mix(clip);
+#endif
     }
 
     protected override void GenerateCurrentStatus() {
