@@ -7,7 +7,7 @@ namespace FRL.IO {
   public class GVRControllerStatus : XRControllerStatus {
 
     private OVRInput.Controller controller;
-    
+
     public override bool IsTracked {
       get {
         return (controller != default(OVRInput.Controller) && OVRInput.GetActiveController() == controller);
@@ -34,6 +34,7 @@ namespace FRL.IO {
     }
 
     public override bool GetClick(XRButton button) {
+      //GetPressDown would make more sense here, but broke trigger input for some reason
       return GetPressUp(button);
     }
 
@@ -90,7 +91,6 @@ namespace FRL.IO {
       if (button == XRButton.Touchpad) return OVRInput.GetUp(OVRInput.Touch.PrimaryTouchpad);
       else return false;
     }
-    
   }
 #else
   public class GVRControllerStatus : BrokenControllerStatus {

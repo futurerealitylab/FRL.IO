@@ -51,7 +51,7 @@ namespace FRL {
       if (!(ovr = GetComponent<OVRManager>())) {
         Debug.Log("Adding OVRManager to XRManager gameObject.");
         ovr = this.gameObject.AddComponent<OVRManager>();
-        ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;       
+        ovr.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
       }
       ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVROculusGo);
 #else
