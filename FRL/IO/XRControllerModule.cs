@@ -75,11 +75,10 @@ namespace FRL.IO {
     private Vector3 previousVelocity, previousAcceleration;
 
 
-    private Dictionary<XRButton, bool> contextActive = new Dictionary<XRButton, bool>();
     private Dictionary<XRButton, GameObject> pressContexts = new Dictionary<XRButton, GameObject>();
     private Dictionary<XRButton, List<Receiver>> pressReceivers = new Dictionary<XRButton, List<Receiver>>();
-    //private Dictionary<XRButton, GameObject> touchContexts = new Dictionary<XRButton, GameObject>();
-    //private Dictionary<XRButton, List<Receiver>> touchReceivers = new Dictionary<XRButton, List<Receiver>>();
+    private Dictionary<XRButton, GameObject> touchContexts = new Dictionary<XRButton, GameObject>();
+    private Dictionary<XRButton, List<Receiver>> touchReceivers = new Dictionary<XRButton, List<Receiver>>();
 
     protected override PointerEventData pointerEventData {
       get {
@@ -108,11 +107,10 @@ namespace FRL.IO {
     protected virtual void OnEnable() {  
       _modules.Add(this);
       foreach (XRButton button in XRButtons) {
-        contextActive.Add(button, false);
         pressContexts.Add(button, null);
         pressReceivers.Add(button, null);
-        //touchContexts.Add(button, null);
-        //touchReceivers.Add(button, null);
+        touchContexts.Add(button, null);
+        touchReceivers.Add(button, null);
       }
     }
 
@@ -124,7 +122,7 @@ namespace FRL.IO {
         ExecuteGlobalPressUp(button);
         ExecuteTouchUp(button);
         ExecuteGlobalTouchUp(button);
-        DestroyContext(button);
+        DestroyPressContext(button);
       }
       xrEventData.Reset();
     }
@@ -174,11 +172,9 @@ namespace FRL.IO {
     void HandleButtons() {
 
       foreach (XRButton button in XRButtons) {
-        bool destroyContext = false;
 
         if (status.GetPressDown(button)) {
-          if (!contextActive[button])
-            CreateContext(button);
+          CreatePressContext(button);
 
           ExecutePressDown(button);
           ExecuteGlobalPressDown(button);
@@ -190,11 +186,10 @@ namespace FRL.IO {
         if (status.GetPressUp(button)) {
           ExecutePressUp(button);
           ExecuteGlobalPressUp(button);
-          destroyContext = true;
+          DestroyPressContext(button);
         }
         if (status.GetTouchDown(button)) {
-          if (!contextActive[button])
-            CreateContext(button);
+          CreateTouchContext(button);
 
           ExecuteTouchDown(button);
           ExecuteGlobalTouchDown(button);
@@ -206,31 +201,40 @@ namespace FRL.IO {
         if (status.GetTouchUp(button)) {
           ExecuteTouchUp(button);
           ExecuteGlobalTouchUp(button);
-          destroyContext = true;
+          DestroyTouchContext(button);
         }
-        if (destroyContext)
-          DestroyContext(button);
       }
       if (status.GetClick(XRButton.Trigger)) ExecuteTriggerClick();
       if (status.GetClick(XRButton.Grip)) ExecuteGripClick();
     }
 
     //binds a context for one button press
-    void CreateContext(XRButton id, GameObject go = null) {
+    void CreatePressContext(XRButton id, GameObject go = null) {
       if (go == null) {
         go = xrEventData.currentRaycast;
       }
 
-      contextActive[id] = true;
       pressContexts[id] = go;
       pressReceivers[id] = Receiver.instances;
     }
 
     //resets context for next button press
-    void DestroyContext(XRButton id) {
-      contextActive[id] = false;
+    void DestroyPressContext(XRButton id) {
       pressContexts[id] = null;
       pressReceivers[id] = null;
+    }
+
+    void CreateTouchContext(XRButton id, GameObject go = null) {
+      if (go == null)
+        go = xrEventData.currentRaycast;
+
+      touchContexts[id] = go;
+      touchReceivers[id] = Receiver.instances;
+    }
+
+    void DestroyTouchContext(XRButton id) {
+      touchContexts[id] = null;
+      touchReceivers[id] = null;
     }
 
     public Vector2 GetThumbstickAxis() {
@@ -806,12 +810,12 @@ namespace FRL.IO {
           break;
         case XRButton.Grip:
           xrEventData.gripTouch = go;
-          ExecuteEvents.Execute<IPointerGripTouchDownHandler>(xrEventData.touchpadTouch, xrEventData,
+          ExecuteEvents.Execute<IPointerGripTouchDownHandler>(xrEventData.gripTouch, xrEventData,
             (x, y) => x.OnPointerGripTouchDown(xrEventData));
           break;
         case XRButton.Menu:
           xrEventData.menuTouch = go;
-          ExecuteEvents.Execute<IPointerMenuTouchDownHandler>(xrEventData.touchpadTouch, xrEventData,
+          ExecuteEvents.Execute<IPointerMenuTouchDownHandler>(xrEventData.menuTouch, xrEventData,
             (x, y) => x.OnPointerMenuTouchDown(xrEventData));
           break;
       }
@@ -819,8 +823,7 @@ namespace FRL.IO {
     }
 
     private void ExecuteTouch(XRButton id) {
-      //if (touchContexts[id] == null)
-      if (pressContexts[id] == null)
+      if (touchContexts[id] == null)
         return;
 
       switch (id) {
@@ -853,19 +856,18 @@ namespace FRL.IO {
             (x, y) => x.OnPointerYTouch(xrEventData));
           break;
         case XRButton.Grip:
-          ExecuteEvents.Execute<IPointerGripTouchHandler>(xrEventData.yTouch, xrEventData,
+          ExecuteEvents.Execute<IPointerGripTouchHandler>(xrEventData.gripTouch, xrEventData,
             (x, y) => x.OnPointerGripTouch(xrEventData));
           break;
         case XRButton.Menu:
-          ExecuteEvents.Execute<IPointerMenuTouchHandler>(xrEventData.yTouch, xrEventData,
+          ExecuteEvents.Execute<IPointerMenuTouchHandler>(xrEventData.menuTouch, xrEventData,
             (x, y) => x.OnPointerMenuTouch(xrEventData));
           break;
       }
     }
 
     private void ExecuteTouchUp(XRButton id) {
-      //if (touchContexts[id] == null)
-      if (pressContexts[id] == null)
+      if (touchContexts[id] == null)
         return;
 
       switch (id) {
@@ -905,12 +907,12 @@ namespace FRL.IO {
           xrEventData.yTouch = null;
           break;
         case XRButton.Grip:
-          ExecuteEvents.Execute<IPointerGripTouchUpHandler>(xrEventData.yTouch, xrEventData,
+          ExecuteEvents.Execute<IPointerGripTouchUpHandler>(xrEventData.gripTouch, xrEventData,
             (x, y) => x.OnPointerGripTouchUp(xrEventData));
           xrEventData.yTouch = null;
           break;
         case XRButton.Menu:
-          ExecuteEvents.Execute<IPointerMenuTouchUpHandler>(xrEventData.yTouch, xrEventData,
+          ExecuteEvents.Execute<IPointerMenuTouchUpHandler>(xrEventData.menuTouch, xrEventData,
             (x, y) => x.OnPointerMenuTouchUp(xrEventData));
           xrEventData.yTouch = null;
           break;
@@ -921,64 +923,55 @@ namespace FRL.IO {
 
       switch (id) {
         case XRButton.Trigger:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalTriggerTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalTriggerTouchDown(xrEventData));
           break;
         case XRButton.Touchpad:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalTouchpadTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalTouchpadTouchDown(xrEventData));
           break;
         case XRButton.A:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalATouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalATouchDown(xrEventData));
           break;
         case XRButton.B:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalBTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalBTouchDown(xrEventData));
           break;
         case XRButton.X:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalXTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalXTouchDown(xrEventData));
           break;
         case XRButton.Y:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalYTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalYTouchDown(xrEventData));
           break;
         case XRButton.Thumbstick:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalThumbstickTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalThumbstickTouchDown(xrEventData));
           break;
         case XRButton.Grip:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalGripTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalGripTouchDown(xrEventData));
           break;
         case XRButton.Menu:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalMenuTouchDownHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalMenuTouchDown(xrEventData));
@@ -987,71 +980,61 @@ namespace FRL.IO {
     }
 
     public void ExecuteGlobalTouch(XRButton id) {
-      //if (touchReceivers[id] == null || touchReceivers[id].Count == 0) {
-      if (pressReceivers[id] == null || pressReceivers[id].Count == 0) { 
+      if (touchReceivers[id] == null || touchReceivers[id].Count == 0) {
         return;
       }
 
       switch (id) {
         case XRButton.Trigger:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalTriggerTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalTriggerTouch(xrEventData));
           break;
         case XRButton.Touchpad:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalTouchpadTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalTouchpadTouch(xrEventData));
           break;
         case XRButton.A:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalATouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalATouch(xrEventData));
           break;
         case XRButton.B:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalBTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalBTouch(xrEventData));
           break;
         case XRButton.X:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalXTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalXTouch(xrEventData));
           break;
         case XRButton.Y:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalYTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalYTouch(xrEventData));
           break;
         case XRButton.Thumbstick:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalThumbstickTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalThumbstickTouch(xrEventData));
           break;
         case XRButton.Grip:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalGripTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalGripTouch(xrEventData));
           break;
         case XRButton.Menu:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalMenuTouchHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalMenuTouch(xrEventData));
@@ -1060,71 +1043,61 @@ namespace FRL.IO {
     }
 
     public void ExecuteGlobalTouchUp(XRButton id) {
-      //if (touchReceivers[id] == null || touchReceivers[id].Count == 0) {
-      if (pressReceivers[id] == null || pressReceivers[id].Count == 0) { 
+      if (touchReceivers[id] == null || touchReceivers[id].Count == 0) {
         return;
       }
 
       switch (id) {
         case XRButton.Trigger:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalTriggerTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalTriggerTouchUp(xrEventData));
           break;
         case XRButton.Touchpad:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalTouchpadTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalTouchpadTouchUp(xrEventData));
           break;
         case XRButton.A:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalATouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalATouchUp(xrEventData));
           break;
         case XRButton.B:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalBTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalBTouchUp(xrEventData));
           break;
         case XRButton.X:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalXTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalXTouchUp(xrEventData));
           break;
         case XRButton.Y:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalYTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalYTouchUp(xrEventData));
           break;
         case XRButton.Thumbstick:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalThumbstickTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalThumbstickTouchUp(xrEventData));
           break;
         case XRButton.Grip:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalGripTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalGripTouchUp(xrEventData));
           break;
         case XRButton.Menu:
-          //foreach (Receiver r in touchReceivers[id])
-          foreach (Receiver r in pressReceivers[id])
+          foreach (Receiver r in touchReceivers[id])
             if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
               ExecuteEvents.Execute<IGlobalMenuTouchUpHandler>(r.gameObject, xrEventData,
                 (x, y) => x.OnGlobalMenuTouchUp(xrEventData));
