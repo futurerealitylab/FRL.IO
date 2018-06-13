@@ -55,7 +55,7 @@ namespace FRL {
       }
       ovr.enabled = (system == XRSystem.CV1 || system == XRSystem.GearVROculusGo);
 #else
-      if (system == XRSystem.CV1 || system == XRSystem.GearVR) {
+      if (system == XRSystem.CV1 || system == XRSystem.GearVROculusGo) {
         Debug.LogError("Cannot switch to " + system + " without OVR SDK!");
         return;
       }

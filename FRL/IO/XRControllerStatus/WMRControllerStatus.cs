@@ -10,20 +10,24 @@ namespace FRL.IO {
       {XRButton.Menu, KeyCode.JoystickButton6},
       {XRButton.Thumbstick, KeyCode.JoystickButton8},
       {XRButton.Touchpad, KeyCode.JoystickButton16},
+      {XRButton.Grip, KeyCode.JoystickButton4}
     };
 
     private static Dictionary<XRButton, KeyCode> rightPressMappings = new Dictionary<XRButton, KeyCode>() {
       {XRButton.Menu, KeyCode.JoystickButton7},
       {XRButton.Thumbstick, KeyCode.JoystickButton9},
       {XRButton.Touchpad, KeyCode.JoystickButton17},
+      {XRButton.Grip, KeyCode.JoystickButton5}
     };
 
     private static Dictionary<XRButton, KeyCode> leftTouchMappings = new Dictionary<XRButton, KeyCode>() {
       {XRButton.Touchpad, KeyCode.JoystickButton18},
+      {XRButton.Grip, KeyCode.JoystickButton11}
     };
 
     private static Dictionary<XRButton, KeyCode> rightTouchMappings = new Dictionary<XRButton, KeyCode>() {
       {XRButton.Touchpad, KeyCode.JoystickButton19},
+      {XRButton.Grip, KeyCode.JoystickButton12}
     };
 
     private XRNode node;
@@ -54,7 +58,7 @@ namespace FRL.IO {
         case XRButton.Trigger:
           return pTriggerAxis < 1f && cTriggerAxis == 1f;
         case XRButton.Grip:
-          return pGripAxis < 1f && cGripAxis == 1f;
+          return GetPressDown(button);
         case XRButton.Thumbstick:
           return GetPressDown(button);
       }
