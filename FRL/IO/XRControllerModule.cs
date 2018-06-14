@@ -74,7 +74,6 @@ namespace FRL.IO {
     private Quaternion previousRotation;
     private Vector3 previousVelocity, previousAcceleration;
 
-
     private Dictionary<XRButton, GameObject> pressContexts = new Dictionary<XRButton, GameObject>();
     private Dictionary<XRButton, List<Receiver>> pressReceivers = new Dictionary<XRButton, List<Receiver>>();
     private Dictionary<XRButton, GameObject> touchContexts = new Dictionary<XRButton, GameObject>();
@@ -123,6 +122,7 @@ namespace FRL.IO {
         ExecuteTouchUp(button);
         ExecuteGlobalTouchUp(button);
         DestroyPressContext(button);
+        DestroyTouchContext(button);
       }
       xrEventData.Reset();
     }
@@ -172,10 +172,8 @@ namespace FRL.IO {
     void HandleButtons() {
 
       foreach (XRButton button in XRButtons) {
-
         if (status.GetPressDown(button)) {
           CreatePressContext(button);
-
           ExecutePressDown(button);
           ExecuteGlobalPressDown(button);
         }
@@ -190,7 +188,6 @@ namespace FRL.IO {
         }
         if (status.GetTouchDown(button)) {
           CreateTouchContext(button);
-
           ExecuteTouchDown(button);
           ExecuteGlobalTouchDown(button);
         }
@@ -279,7 +276,6 @@ namespace FRL.IO {
           x.OnPointerTriggerClick(xrEventData);
         });
       }
-
       foreach (Receiver r in pressReceivers[XRButton.Trigger])
         if (r.gameObject.activeInHierarchy && (!r.module || r.module.Equals(this)))
           ExecuteEvents.Execute<IGlobalTriggerClickHandler>(r.gameObject, xrEventData,
